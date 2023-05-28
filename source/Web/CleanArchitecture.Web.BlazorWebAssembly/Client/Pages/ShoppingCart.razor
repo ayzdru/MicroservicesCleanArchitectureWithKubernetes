@@ -1,0 +1,183 @@
+﻿@page "/shopping-cart"
+@attribute [Authorize]
+@inject Basket.BasketClient BasketClient
+@inject Order.OrderClient OrderClient
+@inject IAccessTokenProvider AuthenticationService
+@using Google.Protobuf.WellKnownTypes
+@inject IJSRuntime JS
+@inject BasketState BasketState
+@inject NavigationManager Navigation
+<PageTitle>Shopping Cart</PageTitle>
+
+@if (BasketState.BasketItems == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!BasketState.BasketItems.Any())
+{
+    <h2>No orders placed</h2>
+    <a class="btn btn-success" href="/">Order some product</a>
+}
+else{
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .Product-img img {
+            width: 100%;
+        }
+
+        .main-section {
+            font-family: 'Roboto Condensed', sans-serif;
+            margin-top: 100px;
+        }
+    </style>
+    <div class="container main-section">
+        <div class="row">
+            <div class="col-lg-12 pl-3 pt-3">
+                <table class="table table-hover border bg-white">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th style="width: 10%;">Quantity</th>
+                            <th>Subtotal</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var basketItem in BasketState.BasketItems)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="row">
+                                        <div class="col-lg-2 Product-img">
+                                            <img src="https://picsum.photos/277/180" alt="@basketItem.Name" class="img-responsive" />
+                                        </div>
+                                        <div class="col-lg-10">
+                                            <h4 class="nomargin">@basketItem.Name</h4>
+                                            <p>
+                                                @basketItem.Description
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@basketItem.Price</td>
+                                <td data-th="Quantity">
+                                    <input type="number" class="form-control text-center" value="@basketItem.Quantity" @onchange="@((ChangeEventArgs e) => { if (int.TryParse(e.Value.ToString(), out int value) && value > 0){ basketItem.Quantity = value; } })">
+                                </td>
+                                <td>@(basketItem.Price * basketItem.Quantity )</td>
+                                <td class="actions" data-th="" style="width: 10%;">
+                                    <button class="btn btn-info btn-sm" hidden="@(basketItem.Quantity == BasketState.OldBasketItemQuantities[basketItem.ProductId])" @onclick="@( async () => { await UpdateQuantity(basketItem); })"><i class="fas fa-sync"></i></button>
+                                    <button class="btn btn-danger btn-sm" @onclick="(() => Delete(basketItem))"><i class="oi oi-delete"></i></button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td><a href="/" class="btn btn-warning text-white"><i class="oi oi-arrow-thick-left"></i> Continue Shopping</a></td>
+                            <td colspan="2" class="hidden-xs"></td>
+                            <td class="hidden-xs text-center" style="width: 10%;"><strong>Total : @_total</strong></td>
+                            <td><button class="btn btn-success btn-block" @onclick="(()=> Checkout())">Checkout <i class="oi oi-arrow-thick-right"></i></button></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    [CascadingParameter]
+    protected Task<AuthenticationState> AuthState { get; set; }
+    private double _total = 0;
+
+    private void SumTotal()
+    {
+        _total = BasketState.BasketItems.Sum(q => q.Price * q.Quantity);
+    }
+    private async Task UpdateQuantity(BasketItemResponse basketItem)
+    {
+        var tokenResult = await AuthenticationService.RequestAccessToken();
+
+        if (tokenResult.TryGetToken(out var token))
+        {
+            var headers = new Metadata();
+            headers.Add("Authorization", $"Bearer {token.Value}");
+            var isUpdated = (await BasketClient.UpdateQuantityByProductIdAsync(new UpdateQuantityRequest() { ProductId = basketItem.ProductId, Quantity = basketItem.Quantity }, headers)).Value;
+            if (isUpdated)
+            {
+                BasketState.OldBasketItemQuantities[basketItem.ProductId] = basketItem.Quantity;
+                SumTotal();
+            }
+            else
+            {
+                basketItem.Quantity = BasketState.OldBasketItemQuantities[basketItem.ProductId];
+                await JS.InvokeAsync<object>("alert", "The basket item could not be updated.");
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tokenResult = await AuthenticationService.RequestAccessToken();
+        if (tokenResult.TryGetToken(out var token))
+        {
+            var headers = new Metadata();
+            headers.Add("Authorization", $"Bearer {token.Value}");
+            BasketState.BasketItems = (await BasketClient.GetBasketItemsAsync(new Empty(), headers)).BasketItems;
+            SumTotal();
+        }
+    }
+    private async Task Delete(BasketItemResponse basketItem)
+    {
+        if (await JS.Confirm($"Remove {basketItem.Name} product from the basket?"))
+        {
+            var tokenResult = await AuthenticationService.RequestAccessToken();
+            if (tokenResult.TryGetToken(out var token))
+            {
+                var headers = new Metadata();
+                headers.Add("Authorization", $"Bearer {token.Value}");
+                var isDeleted = (await BasketClient.DeleteBasketItemByProductIdAsync(new BasketRequest() { ProductId = basketItem.ProductId }, headers)).Value;
+                if (isDeleted)
+                {
+                    BasketState.BasketItems.Remove(basketItem);
+                    BasketState.BasketItemsCount--;
+                    await JS.InvokeAsync<object>("alert", "The basket item deleted.");
+                }
+                else
+                {
+                    await JS.InvokeAsync<object>
+                        ("alert", "The basket item could not be deleted.");
+                }
+            }
+
+        }
+
+    }
+
+    private async Task Checkout()
+    {
+        var user = (await AuthState).User;
+        if (user != null && user.Identity.IsAuthenticated)
+        {
+            var tokenResult = await AuthenticationService.RequestAccessToken();
+            if (tokenResult.TryGetToken(out var token))
+            {
+                var headers = new Metadata();
+                headers.Add("Authorization", $"Bearer {token.Value}");
+                var isCompleted = await OrderClient.CheckoutAsync(new Empty(), headers);
+                if (isCompleted.Value)
+                {
+                    BasketState.BasketItems = new List<BasketItemResponse>();
+                }
+            }
+
+        }
+        else
+        {
+            Navigation.NavigateTo($"authentication/login?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+        }
+    }
+}

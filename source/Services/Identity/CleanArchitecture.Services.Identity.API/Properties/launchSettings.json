@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "CleanArchitecture.Services.Identity.API": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "_configuration/CleanArchitecture.Web.BlazorWebAssembly",
+      "applicationUrl": "https://localhost:5100",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

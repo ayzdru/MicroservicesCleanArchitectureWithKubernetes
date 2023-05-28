@@ -1,0 +1,36 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option csharp_namespace = "CleanArchitecture.Services.Basket.API.Grpc";
+
+package BasketApi;
+
+service Basket {
+  rpc GetBasketItems (google.protobuf.Empty) returns (BasketsResponse);
+  rpc AddProductToBasket(BasketRequest) returns (google.protobuf.BoolValue);
+  rpc GetBasketItemsCount(google.protobuf.Empty) returns (google.protobuf.Int32Value);
+  rpc DeleteBasketItemByProductId (BasketRequest) returns (google.protobuf.BoolValue);
+  rpc ClearBasket (google.protobuf.Empty) returns (google.protobuf.BoolValue);
+  rpc UpdateQuantityByProductId(UpdateQuantityRequest) returns (google.protobuf.BoolValue);
+}
+
+message BasketRequest {
+	string productId = 1;
+}
+
+message BasketsResponse{
+   repeated  BasketItemResponse basketItems = 1;
+}
+
+message BasketItemResponse {
+  string productId =1;
+  string name = 2;
+  string description = 3;
+  int32 quantity = 4;
+  double price = 5;
+}
+message UpdateQuantityRequest {
+	string productId = 1;
+	int32 quantity = 2;
+}
