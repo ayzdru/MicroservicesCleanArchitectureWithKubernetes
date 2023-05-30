@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CleanArchitecture.Services.Catalog.API.Data.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    [Migration("20230525233057_InitialCreate")]
+    [Migration("20230530052123_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -32,7 +32,7 @@ namespace CleanArchitecture.Services.Catalog.API.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
@@ -41,7 +41,7 @@ namespace CleanArchitecture.Services.Catalog.API.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("LastModified")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid?>("LastModifiedByUserId")
                         .HasColumnType("uuid");
@@ -73,7 +73,7 @@ namespace CleanArchitecture.Services.Catalog.API.Data.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("UserName")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

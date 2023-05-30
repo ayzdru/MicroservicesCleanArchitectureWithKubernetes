@@ -19,20 +19,26 @@ namespace CleanArchitecture.Services.Identity.API.Data
             DbContextOptions options,
             IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
         {
-            var kekAesProvider = RedisConnections.GetAesProvider(() => RedisConnections.KekRedisConnection.GetDatabase(), RedisConnections.KeyEncryptionKeyRedisKey);
-            _encryptionProvider = RedisConnections.GetAesProvider(() => RedisConnections.DekRedisConnection.GetDatabase(), RedisConnections.DataEncryptionKeyRedisKey, kekAesProvider);
+            if (RedisConnections.KekRedisConnection != null && RedisConnections.DekRedisConnection != null)
+            {
+                var kekAesProvider = RedisConnections.GetAesProvider(() => RedisConnections.KekRedisConnection.GetDatabase(), RedisConnections.KeyEncryptionKeyRedisKey);
+                _encryptionProvider = RedisConnections.GetAesProvider(() => RedisConnections.DekRedisConnection.GetDatabase(), RedisConnections.DataEncryptionKeyRedisKey, kekAesProvider);
+            }
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            var userEntityBuilder = modelBuilder.Entity<IdentityUser>();
-            userEntityBuilder.Property(x => x.UserName).IsEncrypted();
-            userEntityBuilder.Property(x => x.NormalizedUserName).IsEncrypted();
-            userEntityBuilder.Property(x => x.Email).IsEncrypted();
-            userEntityBuilder.Property(x => x.NormalizedEmail).IsEncrypted();
-            userEntityBuilder.Property(x => x.PasswordHash).IsEncrypted();
-            userEntityBuilder.Property(x => x.PhoneNumber).IsEncrypted();
+            if (RedisConnections.KekRedisConnection != null && RedisConnections.DekRedisConnection != null)
+            {
+                var userEntityBuilder = modelBuilder.Entity<IdentityUser>();
+                userEntityBuilder.Property(x => x.UserName).IsEncrypted();
+                userEntityBuilder.Property(x => x.NormalizedUserName).IsEncrypted();
+                userEntityBuilder.Property(x => x.Email).IsEncrypted();
+                userEntityBuilder.Property(x => x.NormalizedEmail).IsEncrypted();
+                userEntityBuilder.Property(x => x.PasswordHash).IsEncrypted();
+                userEntityBuilder.Property(x => x.PhoneNumber).IsEncrypted();
 
-            modelBuilder.UseEncryption(_encryptionProvider);
+                modelBuilder.UseEncryption(_encryptionProvider);
+            }
         }
     }
 }

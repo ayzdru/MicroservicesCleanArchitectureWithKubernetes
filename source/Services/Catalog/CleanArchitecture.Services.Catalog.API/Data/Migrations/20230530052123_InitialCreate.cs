@@ -16,7 +16,7 @@ namespace CleanArchitecture.Services.Catalog.API.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: true),
+                    UserName = table.Column<string>(type: "text", nullable: true),
                     Email = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -33,9 +33,9 @@ namespace CleanArchitecture.Services.Catalog.API.Data.Migrations
                     Description = table.Column<string>(type: "text", nullable: true),
                     Price = table.Column<double>(type: "double precision", nullable: false),
                     CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     LastModifiedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    LastModified = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     RowVersion = table.Column<byte[]>(type: "bytea", nullable: true)
                 },
                 constraints: table =>

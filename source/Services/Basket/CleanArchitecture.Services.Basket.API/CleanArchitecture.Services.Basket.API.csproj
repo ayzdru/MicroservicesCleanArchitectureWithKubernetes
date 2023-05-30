@@ -11,6 +11,9 @@
     <None Remove="Protos\basket.proto" />
   </ItemGroup>
   <ItemGroup>
+
+	  <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2" />
+	  <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />	  
 	  <PackageReference Include="Google.Protobuf" Version="3.23.1" />
 	  <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.53.0" />
 	  <PackageReference Include="Grpc.AspNetCore.Web" Version="2.53.0" />
@@ -43,6 +46,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />
+	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj" />
 	</ItemGroup>
 	<Target Name="CopyFiles" BeforeTargets="Build">
 		<Copy SourceFiles="@(Protos)" DestinationFolder="..\..\..\Services\Order\CleanArchitecture.Services.Order.API\Protos\" />

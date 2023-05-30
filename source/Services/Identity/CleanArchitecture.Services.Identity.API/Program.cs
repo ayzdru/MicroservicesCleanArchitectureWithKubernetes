@@ -5,16 +5,19 @@ using System.Net;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Identity.API.Data;
 using CleanArchitecture.Shared.DataProtection.Redis;
+using CleanArchitecture.Shared.HealthChecks;
 using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -36,6 +39,7 @@ namespace CleanArchitecture.Services.Identity.API
             IdentityModelEventSource.ShowPII = true;
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             var builder = WebApplication.CreateBuilder(args);
+            var healtchecks = builder.Services.AddAllHealthChecks();
             var connectionString = builder.Configuration.GetConnectionString("IdentityConnectionString");
 
             builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -79,7 +83,14 @@ namespace CleanArchitecture.Services.Identity.API
                     builder => builder
                         .AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod().WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding"));
             });
-
+            var rabbitmqConnectionString = builder.Configuration.GetValue<string>("RabbitMQ");
+            builder.Services.AddCap(x =>
+            {
+                x.UseEntityFramework<IdentityDbContext>();
+                x.UseDashboard();
+                x.UseRabbitMQ(rabbitmqConnectionString);
+                x.FailedRetryCount = 5;
+            });
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
             if (builder.Environment.IsDevelopment() == false)
             {
@@ -89,6 +100,9 @@ namespace CleanArchitecture.Services.Identity.API
                 RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
                 RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
                 RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
+                healtchecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+                healtchecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+                healtchecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
                 builder.Services.AddRedis(serviceName, RedisConnections.CacheRedisConnection, RedisConnections.KekRedisConnection, RedisConnections.DekRedisConnection);
             }
             var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
@@ -163,8 +177,14 @@ namespace CleanArchitecture.Services.Identity.API
                 }
 
             });
-
+            var identityUrl = builder.Configuration.GetValue<string>("IdentityUrl");
+            healtchecks
+                .AddNpgSql(connectionString,"SELECT 1;",null, "PostgreSQL", HealthStatus.Unhealthy, new string[] { "postgresql", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
+                .AddDbContextCheck<IdentityDbContext>("EntityFrameworkDbContext", HealthStatus.Unhealthy, new string[] { "entityframework", HealthCheckExtensions.Readiness })
+                .AddRabbitMQ(rabbitmqConnectionString, null, "RabbitMQ", null,new string[] {"rabbitmq", HealthCheckExtensions.Readiness}, HealthCheckExtensions.DefaultTimeOut)
+                .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
             var app = builder.Build();
+            app.UseAllHealthChecks();
             app.UseForwardedHeaders();
             if (app.Environment.IsDevelopment())
             {
@@ -178,7 +198,6 @@ namespace CleanArchitecture.Services.Identity.API
             app.UseStaticFiles();
             app.UseRouting();
             app.UseCors("CorsPolicy");
-            var identityUrl = builder.Configuration.GetValue<string>("IdentityUrl");
             app.Use(async (context, next) =>
             {
                 context.Response.Headers.Add("Content-Security-Policy", "script-src 'unsafe-inline'");

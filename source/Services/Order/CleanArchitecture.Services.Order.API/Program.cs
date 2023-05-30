@@ -8,16 +8,20 @@ using System.Threading.Tasks;
 using CleanArchitecture.Services.Order.API.Data;
 using CleanArchitecture.Services.Order.API.Grpc;
 using CleanArchitecture.Shared.DataProtection.Redis;
+using CleanArchitecture.Shared.HealthChecks;
 using DotNetCore.CAP.Messages;
 using Grpc.Net.Client;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
@@ -26,6 +30,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using StackExchange.Redis;
 
 namespace CleanArchitecture.Services.Order.API
 {
@@ -38,6 +43,7 @@ namespace CleanArchitecture.Services.Order.API
             IdentityModelEventSource.ShowPII = true;
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             var builder = WebApplication.CreateBuilder(args);
+            var healtchecks = builder.Services.AddAllHealthChecks();
             var connectionString = builder.Configuration.GetConnectionString("OrderConnectionString");
             builder.Services.AddDbContext<OrderDbContext>(options =>
                    options.UseNpgsql(connectionString));
@@ -85,23 +91,13 @@ namespace CleanArchitecture.Services.Order.API
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+            var rabbitmqConnectionString = builder.Configuration.GetValue<string>("RabbitMQ");
             builder.Services.AddCap(x =>
             {
                 x.UseEntityFramework<OrderDbContext>();
                 x.UseDashboard();
-                x.UseRabbitMQ(q=> {
-                    q.UserName = builder.Configuration.GetValue<string>("RabbitMQUserName");
-                    q.Password = builder.Configuration.GetValue<string>("RabbitMQPassword");
-                    q.HostName = builder.Configuration.GetValue<string>("RabbitMQHostName");
-                    q.Port = builder.Configuration.GetValue<int>("RabbitMQPort");
-                });
+                x.UseRabbitMQ(rabbitmqConnectionString);
                 x.FailedRetryCount = 5;
-                x.FailedThresholdCallback = failed =>
-                {
-                    var aaa =
-                        $@"A message of type {failed.MessageType} failed after executing {x.FailedRetryCount} several times, 
-                        requiring manual troubleshooting. Message name: {failed.Message.GetName()}";
-                };
             });
 
             builder.Services.AddHttpContextAccessor();
@@ -146,6 +142,9 @@ namespace CleanArchitecture.Services.Order.API
                 RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
                 RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
                 RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
+                healtchecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+                healtchecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+                healtchecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
                 builder.Services.AddRedis(serviceName, RedisConnections.CacheRedisConnection, RedisConnections.KekRedisConnection, RedisConnections.DekRedisConnection);
             }
             var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
@@ -219,8 +218,14 @@ namespace CleanArchitecture.Services.Order.API
                 }
 
             });
+            healtchecks
+                .AddNpgSql(connectionString, "SELECT 1;", null, "PostgreSQL", HealthStatus.Unhealthy, new string[] { "postgresql", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
+                .AddDbContextCheck<OrderDbContext>("EntityFrameworkDbContext", HealthStatus.Unhealthy, new string[] { "entityframework", HealthCheckExtensions.Readiness })
+                .AddRabbitMQ(rabbitmqConnectionString, null, "RabbitMQ", null, new string[] { "rabbitmq", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
+                .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
             var app = builder.Build();
 
+            app.UseAllHealthChecks();
             app.UseResponseCompression();
             if (app.Environment.IsDevelopment())
             {

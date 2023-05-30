@@ -20,6 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.5" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
 	  <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.5.0-alpha.2" />
 	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.5.0-alpha.2" />
@@ -33,10 +34,20 @@
 	  <PackageReference Include="OpenTelemetry.Contrib.Instrumentation.GrpcCore" Version="1.0.0-beta3" />
 	  <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.0-preview.4" />
 	  <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.0.0-rc9.8" />
+	  <PackageReference Include="DotNetCore.CAP" Version="7.1.3" />
+	  <PackageReference Include="DotNetCore.CAP.Dashboard" Version="7.1.3" />
+	  <PackageReference Include="DotNetCore.CAP.OpenTelemetry" Version="7.1.3" />
+	  <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="7.1.3" />
+	  <PackageReference Include="DotNetCore.CAP.RabbitMQ" Version="7.1.3" />
+	  <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="6.0.2" />
+	  <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2" />
+	  <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="6.0.2" />
+	  <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />
+    <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj" />
   </ItemGroup>
 
 </Project>

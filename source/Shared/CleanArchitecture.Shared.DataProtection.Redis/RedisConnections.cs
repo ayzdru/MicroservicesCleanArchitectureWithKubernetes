@@ -22,7 +22,7 @@ namespace CleanArchitecture.Shared.DataProtection.Redis
         {
             get
             {
-                return _cacheLazyRedisConnection.Value;
+                return _cacheLazyRedisConnection?.Value;
             }
         }
         public static void SetCacheRedisConnection(string cacheRedisConnectionString)
@@ -38,7 +38,8 @@ namespace CleanArchitecture.Shared.DataProtection.Redis
         {
             get
             {
-                return _kekLazyRedisConnection.Value;
+
+                return _kekLazyRedisConnection?.Value;
             }
         }
         public static void SetKekRedisConnection(string kekRedisConnectionString)
@@ -54,7 +55,7 @@ namespace CleanArchitecture.Shared.DataProtection.Redis
         {
             get
             {
-                return _dekLazyRedisConnection.Value;
+                return _dekLazyRedisConnection?.Value;
             }
         }
         public static void SetDekRedisConnection(string dekRedisConnectionString)

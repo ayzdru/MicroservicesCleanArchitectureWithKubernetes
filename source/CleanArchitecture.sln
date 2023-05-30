@@ -37,11 +37,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Web.Blazo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{DF06F62B-D5F7-41CC-B580-395E989EA9EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Shared.DataProtection.Redis", "Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj", "{2D676BB7-970E-440E-9AB6-A13CF9095FAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Shared.DataProtection.Redis", "Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj", "{2D676BB7-970E-440E-9AB6-A13CF9095FAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Shared.DataEncryption", "Shared\CleanArchitecture.Shared.DataEncryption\CleanArchitecture.Shared.DataEncryption.csproj", "{6D7B115A-8A9E-4A8A-8619-A649444DF5BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Shared.DataEncryption", "Shared\CleanArchitecture.Shared.DataEncryption\CleanArchitecture.Shared.DataEncryption.csproj", "{6D7B115A-8A9E-4A8A-8619-A649444DF5BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore", "Shared\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore.csproj", "{012BE780-6FAA-4290-AF72-51CA6DD51BE7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore", "Shared\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore.csproj", "{012BE780-6FAA-4290-AF72-51CA6DD51BE7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Shared.HealthChecks", "Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj", "{A0681248-309E-4AE7-A425-151CA87359AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,6 +91,10 @@ Global
 		{012BE780-6FAA-4290-AF72-51CA6DD51BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{012BE780-6FAA-4290-AF72-51CA6DD51BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{012BE780-6FAA-4290-AF72-51CA6DD51BE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0681248-309E-4AE7-A425-151CA87359AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0681248-309E-4AE7-A425-151CA87359AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0681248-309E-4AE7-A425-151CA87359AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0681248-309E-4AE7-A425-151CA87359AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,6 +118,7 @@ Global
 		{2D676BB7-970E-440E-9AB6-A13CF9095FAE} = {DF06F62B-D5F7-41CC-B580-395E989EA9EE}
 		{6D7B115A-8A9E-4A8A-8619-A649444DF5BE} = {DF06F62B-D5F7-41CC-B580-395E989EA9EE}
 		{012BE780-6FAA-4290-AF72-51CA6DD51BE7} = {DF06F62B-D5F7-41CC-B580-395E989EA9EE}
+		{A0681248-309E-4AE7-A425-151CA87359AA} = {DF06F62B-D5F7-41CC-B580-395E989EA9EE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1AF80906-EA29-46E6-8780-A56FAB412EB8}
