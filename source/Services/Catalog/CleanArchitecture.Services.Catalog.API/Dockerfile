@@ -4,12 +4,12 @@ WORKDIR /App
 # Copy everything
 COPY . ./
 # Restore as distinct layers
-RUN dotnet restore
+RUN dotnet restore /App/Services/Catalog/CleanArchitecture.Services.Catalog.API
 # Build and publish a release
-RUN dotnet publish -c Release -o out
+RUN dotnet publish /App/Services/Catalog/CleanArchitecture.Services.Catalog.API -c Release -o /App/Services/Catalog/CleanArchitecture.Services.Catalog.API/Out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /App
-COPY --from=build-env /App/out .
+COPY --from=build-env /App/Services/Catalog/CleanArchitecture.Services.Catalog.API/Out .
 ENTRYPOINT ["dotnet", "CleanArchitecture.Services.Catalog.API.dll"]

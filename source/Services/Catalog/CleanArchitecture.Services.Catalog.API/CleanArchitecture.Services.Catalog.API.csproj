@@ -48,7 +48,7 @@
 	<ItemGroup>
 		<Protos Include="Protos\*.*" />
 	</ItemGroup>
-	<Target Name="CopyFiles" BeforeTargets="Build">	
+	<Target Name="CopyFiles" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">	
 		<Copy SourceFiles="@(Protos)" DestinationFolder="..\..\..\Services\Basket\CleanArchitecture.Services.Basket.API\Protos\" />
 		<Copy SourceFiles="@(Protos)" DestinationFolder="..\..\..\Web\CleanArchitecture.Web.BlazorWebAssembly\Client\Protos\" />
 	</Target>

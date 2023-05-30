@@ -2,8 +2,8 @@
   {
     "__Key__": "37927844-1ba9-43a9-b46b-f32d552a0004",
     "Id": "37927844-1ba9-43a9-b46b-f32d552a0004",
-    "Directory": "C:\\Users\\Mehtap\\Desktop\\MicroservicesCleanArchitectureWithKubernetes\\source\\Services\\Basket\\CleanArchitecture.Services.Basket.API",
-    "Dockerfile": "C:\\Users\\Mehtap\\Desktop\\MicroservicesCleanArchitectureWithKubernetes\\source\\Services\\Basket\\CleanArchitecture.Services.Basket.API\\Dockerfile",
+    "Directory": "C:\\Projects\\MicroservicesCleanArchitectureWithKubernetes\\source\\",
+    "Dockerfile": "C:\\Projects\\MicroservicesCleanArchitectureWithKubernetes\\source\\Services\\Basket\\CleanArchitecture.Services.Basket.API\\Dockerfile",
     "ImageName": "192.168.1.55:5000/basketapi:latest",
     "Name": "CleanArchitecture.Services.Basket.API"
   },
@@ -26,8 +26,8 @@
   {
     "__Key__": "fb7f98b0-3972-47b5-a147-24a03eb0a138",
     "Id": "fb7f98b0-3972-47b5-a147-24a03eb0a138",
-    "Directory": "C:\\Users\\Mehtap\\Desktop\\MicroservicesCleanArchitectureWithKubernetes\\source\\Services\\Order\\CleanArchitecture.Services.Order.API",
-    "Dockerfile": "C:\\Users\\Mehtap\\Desktop\\MicroservicesCleanArchitectureWithKubernetes\\source\\Services\\Order\\CleanArchitecture.Services.Order.API\\Dockerfile",
+    "Directory": "C:\\Projects\\MicroservicesCleanArchitectureWithKubernetes\\source\\",
+    "Dockerfile": "C:\\Projects\\MicroservicesCleanArchitectureWithKubernetes\\source\\Services\\Order\\CleanArchitecture.Services.Order.API\\Dockerfile",
     "ImageName": "192.168.1.55:5000/orderapi:latest",
     "Name": "CleanArchitecture.Services.Order.API"
   },
@@ -42,8 +42,8 @@
   {
     "__Key__": "ce90713c-27cc-4212-9e4e-37e91218ee18",
     "Id": "ce90713c-27cc-4212-9e4e-37e91218ee18",
-    "Directory": "C:\\Users\\Mehtap\\Desktop\\MicroservicesCleanArchitectureWithKubernetes\\source\\Services\\Payment\\CleanArchitecture.Services.Payment.API",
-    "Dockerfile": "C:\\Users\\Mehtap\\Desktop\\MicroservicesCleanArchitectureWithKubernetes\\source\\Services\\Payment\\CleanArchitecture.Services.Payment.API\\Dockerfile",
+    "Directory": "C:\\Projects\\MicroservicesCleanArchitectureWithKubernetes\\source\\",
+    "Dockerfile": "C:\\Projects\\MicroservicesCleanArchitectureWithKubernetes\\source\\Services\\Payment\\CleanArchitecture.Services.Payment.API\\Dockerfile",
     "ImageName": "192.168.1.55:5000/paymentapi:latest",
     "Name": "CleanArchitecture.Services.Payment.API"
   }
