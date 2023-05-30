@@ -31,9 +31,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Order.API", "Services\Order\CleanArchitecture.Services.Order.API\CleanArchitecture.Services.Order.API.csproj", "{68A33425-31A3-43C3-9D13-842BD34CE14B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Web.BlazorWebAssembly.Server", "Web\CleanArchitecture.Web.BlazorWebAssembly\Server\CleanArchitecture.Web.BlazorWebAssembly.Server.csproj", "{CA231C45-C35A-49CF-840E-32831BF6967F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Web.BlazorWebAssembly.Server", "Web\CleanArchitecture.Web.BlazorWebAssembly\Server\CleanArchitecture.Web.BlazorWebAssembly.Server.csproj", "{CA231C45-C35A-49CF-840E-32831BF6967F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Web.BlazorWebAssembly.Client", "Web\CleanArchitecture.Web.BlazorWebAssembly\Client\CleanArchitecture.Web.BlazorWebAssembly.Client.csproj", "{C45404BB-EA87-45E0-B91B-AA5BEFB39913}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Web.BlazorWebAssembly.Client", "Web\CleanArchitecture.Web.BlazorWebAssembly\Client\CleanArchitecture.Web.BlazorWebAssembly.Client.csproj", "{C45404BB-EA87-45E0-B91B-AA5BEFB39913}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{DF06F62B-D5F7-41CC-B580-395E989EA9EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Shared.DataProtection.Redis", "Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj", "{2D676BB7-970E-440E-9AB6-A13CF9095FAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Shared.DataEncryption", "Shared\CleanArchitecture.Shared.DataEncryption\CleanArchitecture.Shared.DataEncryption.csproj", "{6D7B115A-8A9E-4A8A-8619-A649444DF5BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore", "Shared\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore.csproj", "{012BE780-6FAA-4290-AF72-51CA6DD51BE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +77,18 @@ Global
 		{C45404BB-EA87-45E0-B91B-AA5BEFB39913}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C45404BB-EA87-45E0-B91B-AA5BEFB39913}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C45404BB-EA87-45E0-B91B-AA5BEFB39913}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D676BB7-970E-440E-9AB6-A13CF9095FAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D676BB7-970E-440E-9AB6-A13CF9095FAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D676BB7-970E-440E-9AB6-A13CF9095FAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D676BB7-970E-440E-9AB6-A13CF9095FAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D7B115A-8A9E-4A8A-8619-A649444DF5BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D7B115A-8A9E-4A8A-8619-A649444DF5BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D7B115A-8A9E-4A8A-8619-A649444DF5BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D7B115A-8A9E-4A8A-8619-A649444DF5BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{012BE780-6FAA-4290-AF72-51CA6DD51BE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{012BE780-6FAA-4290-AF72-51CA6DD51BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{012BE780-6FAA-4290-AF72-51CA6DD51BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{012BE780-6FAA-4290-AF72-51CA6DD51BE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -88,6 +108,10 @@ Global
 		{68A33425-31A3-43C3-9D13-842BD34CE14B} = {252BDBAC-7008-4FFB-A3F7-2EB41920DA2B}
 		{CA231C45-C35A-49CF-840E-32831BF6967F} = {B68D6382-D066-4E1E-ABBF-91F311E8E572}
 		{C45404BB-EA87-45E0-B91B-AA5BEFB39913} = {B68D6382-D066-4E1E-ABBF-91F311E8E572}
+		{DF06F62B-D5F7-41CC-B580-395E989EA9EE} = {3A07ABF3-CBA5-4970-9DA2-3127D104271D}
+		{2D676BB7-970E-440E-9AB6-A13CF9095FAE} = {DF06F62B-D5F7-41CC-B580-395E989EA9EE}
+		{6D7B115A-8A9E-4A8A-8619-A649444DF5BE} = {DF06F62B-D5F7-41CC-B580-395E989EA9EE}
+		{012BE780-6FAA-4290-AF72-51CA6DD51BE7} = {DF06F62B-D5F7-41CC-B580-395E989EA9EE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1AF80906-EA29-46E6-8780-A56FAB412EB8}

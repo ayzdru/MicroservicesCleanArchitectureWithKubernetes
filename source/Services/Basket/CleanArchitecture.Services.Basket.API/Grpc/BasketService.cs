@@ -36,7 +36,7 @@ namespace CleanArchitecture.Services.Basket.API.Grpc
             var basketResponse = new BasketsResponse();
             if (userId != null)
             {
-                List<BasketItem> basketItems = null;
+                List<BasketItem> basketItems = null;                
                 var basketItemsJson = await _cache.GetStringAsync(userId);
                 if (!string.IsNullOrEmpty(basketItemsJson))
                 {

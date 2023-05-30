@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Catalog.API.Data;
 using CleanArchitecture.Services.Catalog.API.Grpc;
+using CleanArchitecture.Shared.DataProtection.Redis;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,13 +24,13 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-
 namespace CleanArchitecture.Services.Catalog.API
 {
     public class Program
     {
         public static void Main(string[] args)
         {
+            bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
             ServicePointManager.ServerCertificateValidationCallback +=
     (sender, cert, chain, sslPolicyErrors) => true;
             IdentityModelEventSource.ShowPII = true;
@@ -97,7 +98,16 @@ namespace CleanArchitecture.Services.Catalog.API
                     new[] { "application/octet-stream" });
             });
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
-
+            if (isDevelopment == false)
+            {
+                var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
+                var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
+                var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
+                RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
+                RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
+                RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
+                builder.Services.AddRedis(serviceName, RedisConnections.CacheRedisConnection, RedisConnections.KekRedisConnection, RedisConnections.DekRedisConnection);
+            }
             var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
             Action<ResourceBuilder> configureResource = r => r.AddService(
     serviceName: serviceName,
@@ -115,12 +125,19 @@ namespace CleanArchitecture.Services.Catalog.API
             .AddEntityFrameworkCoreInstrumentation()
             .AddGrpcCoreInstrumentation()
             .AddNpgsql();
-
-        t.AddOtlpExporter(otlpOptions =>
+        
+        if (isDevelopment == true)
         {
-            otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-        });
-        t.AddConsoleExporter();
+            t.AddConsoleExporter();
+        }
+        else
+        {
+            t.AddRedisInstrumentation(RedisConnections.CacheRedisConnection).AddRedisInstrumentation(RedisConnections.KekRedisConnection).AddRedisInstrumentation(RedisConnections.DekRedisConnection);
+            t.AddOtlpExporter(otlpOptions =>
+            {
+                otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+            });
+        }
     })
     .WithMetrics(m =>
     {
@@ -143,11 +160,17 @@ namespace CleanArchitecture.Services.Catalog.API
                 var resourceBuilder = ResourceBuilder.CreateDefault();
                 configureResource(resourceBuilder);
                 options.SetResourceBuilder(resourceBuilder);
-                options.AddOtlpExporter(otlpOptions =>
+                if (isDevelopment == true)
                 {
-                    otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-                });
-                options.AddConsoleExporter();
+                    options.AddConsoleExporter();
+                }
+                else
+                {
+                    options.AddOtlpExporter(otlpOptions =>
+                    {
+                        otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+                    });
+                }
 
             });
             var app = builder.Build();

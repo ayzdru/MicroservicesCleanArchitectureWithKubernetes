@@ -19,8 +19,7 @@
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.5" />
-	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.5" />	 
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.5" /> 
 	  <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.5.0-alpha.2" />
 	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.5.0-alpha.2" />
 	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.Logs" Version="1.5.0-alpha.2" />
@@ -41,6 +40,9 @@
   </ItemGroup>
 	<ItemGroup>
 		<Protos Include="Protos\*.*" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />
 	</ItemGroup>
 	<Target Name="CopyFiles" BeforeTargets="Build">
 		<Copy SourceFiles="@(Protos)" DestinationFolder="..\..\..\Services\Order\CleanArchitecture.Services.Order.API\Protos\" />

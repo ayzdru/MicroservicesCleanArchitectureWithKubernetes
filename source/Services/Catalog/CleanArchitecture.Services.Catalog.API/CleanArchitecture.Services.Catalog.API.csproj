@@ -32,10 +32,11 @@
 	  <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.0.0-beta.6" />
 	  <PackageReference Include="OpenTelemetry.Instrumentation.GrpcNetClient" Version="1.0.0-rc9.14" />
 	  <PackageReference Include="OpenTelemetry.Contrib.Instrumentation.GrpcCore" Version="1.0.0-beta3" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.0.0-rc9.8" />
 	  <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.0-preview.4" />
   </ItemGroup>
 	<ItemGroup>
-		<Protos Include="Protos\*.*"/>
+		<Protos Include="Protos\*.*" />
 	</ItemGroup>
 	<Target Name="CopyFiles" BeforeTargets="Build">	
 		<Copy SourceFiles="@(Protos)" DestinationFolder="..\..\..\Services\Basket\CleanArchitecture.Services.Basket.API\Protos\" />
@@ -46,6 +47,10 @@
   </ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Data\Migrations\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore.csproj" />
+	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />
 	</ItemGroup>
 
 </Project>
