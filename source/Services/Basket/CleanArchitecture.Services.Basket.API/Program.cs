@@ -35,10 +35,11 @@ namespace CleanArchitecture.Services.Basket.API
         
         public static void Main(string[] args)
         {
-            bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
             ServicePointManager.ServerCertificateValidationCallback +=
 (sender, cert, chain, sslPolicyErrors) => true;
             IdentityModelEventSource.ShowPII = true;
+
+
             var builder = WebApplication.CreateBuilder(args);
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("sub");
 
@@ -106,7 +107,7 @@ namespace CleanArchitecture.Services.Basket.API
         }
     });
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
-            if (isDevelopment == false)
+            if (builder.Environment.IsDevelopment() == false)
             {
                 var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");       
                 var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");  
@@ -132,7 +133,7 @@ namespace CleanArchitecture.Services.Basket.API
             .AddGrpcClientInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
             .AddGrpcCoreInstrumentation();
-        if (isDevelopment == true)
+        if (builder.Environment.IsDevelopment() == true)
         {
             t.AddConsoleExporter();
             builder.Services.AddDistributedMemoryCache();
@@ -154,7 +155,7 @@ namespace CleanArchitecture.Services.Basket.API
             .AddRuntimeInstrumentation()
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation();
-        if (isDevelopment == true)
+        if (builder.Environment.IsDevelopment() == true)
         {
             m.AddConsoleExporter();
         }
@@ -173,7 +174,7 @@ namespace CleanArchitecture.Services.Basket.API
                 var resourceBuilder = ResourceBuilder.CreateDefault();
                 configureResource(resourceBuilder);
                 options.SetResourceBuilder(resourceBuilder);
-                if (isDevelopment == true)
+                if (builder.Environment.IsDevelopment() == true)
                 {
                     options.AddConsoleExporter();
                 }

@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Payment.API.Data;
 using CleanArchitecture.Services.Payment.API.Grpc;
+using CleanArchitecture.Shared.DataProtection.Redis;
 using DotNetCore.CAP.Messages;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -107,7 +108,16 @@ namespace CleanArchitecture.Services.Payment.API
             });
 
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
-
+            if (builder.Environment.IsDevelopment() == false)
+            {
+                var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
+                var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
+                var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
+                RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
+                RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
+                RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
+                builder.Services.AddRedis(serviceName, RedisConnections.CacheRedisConnection, RedisConnections.KekRedisConnection, RedisConnections.DekRedisConnection);
+            }
             var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
             Action<ResourceBuilder> configureResource = r => r.AddService(
     serviceName: serviceName,
@@ -126,11 +136,18 @@ namespace CleanArchitecture.Services.Payment.API
             .AddEntityFrameworkCoreInstrumentation()
             .AddGrpcCoreInstrumentation().AddNpgsql();
 
-        t.AddOtlpExporter(otlpOptions =>
+        if (builder.Environment.IsDevelopment() == true)
         {
-            otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-        });
-        t.AddConsoleExporter();
+            t.AddConsoleExporter();
+        }
+        else
+        {
+            t.AddRedisInstrumentation(RedisConnections.CacheRedisConnection).AddRedisInstrumentation(RedisConnections.KekRedisConnection).AddRedisInstrumentation(RedisConnections.DekRedisConnection);
+            t.AddOtlpExporter(otlpOptions =>
+            {
+                otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+            });
+        }
     })
     .WithMetrics(m =>
     {
@@ -140,11 +157,17 @@ namespace CleanArchitecture.Services.Payment.API
             .AddRuntimeInstrumentation()
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation();
-        m.AddOtlpExporter(otlpOptions =>
+        if (builder.Environment.IsDevelopment() == true)
         {
-            otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-        });
-        m.AddConsoleExporter();
+            m.AddConsoleExporter();
+        }
+        else
+        {
+            m.AddOtlpExporter(otlpOptions =>
+            {
+                otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+            });
+        }
     });
             builder.Logging.ClearProviders();
 
@@ -153,11 +176,17 @@ namespace CleanArchitecture.Services.Payment.API
                 var resourceBuilder = ResourceBuilder.CreateDefault();
                 configureResource(resourceBuilder);
                 options.SetResourceBuilder(resourceBuilder);
-                options.AddOtlpExporter(otlpOptions =>
+                if (builder.Environment.IsDevelopment() == true)
                 {
-                    otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-                });
-                options.AddConsoleExporter();
+                    options.AddConsoleExporter();
+                }
+                else
+                {
+                    options.AddOtlpExporter(otlpOptions =>
+                    {
+                        otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+                    });
+                }
 
             });
 

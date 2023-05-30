@@ -18,13 +18,11 @@ namespace CleanArchitecture.Services.Catalog.API.Data
         {
             var kekAesProvider = RedisConnections.GetAesProvider(() => RedisConnections.KekRedisConnection.GetDatabase(), RedisConnections.KeyEncryptionKeyRedisKey);
             _encryptionProvider = RedisConnections.GetAesProvider(() => RedisConnections.DekRedisConnection.GetDatabase(), RedisConnections.DataEncryptionKeyRedisKey, kekAesProvider);
-            
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             var userEntityBuilder = modelBuilder.Entity<User>();
-
-            userEntityBuilder.Property(x => x.Name).IsEncrypted();
+            userEntityBuilder.Property(x => x.UserName).IsEncrypted();
             userEntityBuilder.Property(x => x.Email).IsEncrypted();
 
             modelBuilder.UseEncryption(_encryptionProvider);

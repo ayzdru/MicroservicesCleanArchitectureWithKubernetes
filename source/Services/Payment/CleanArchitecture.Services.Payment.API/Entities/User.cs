@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CleanArchitecture.Services.Order.API.Entities
+namespace CleanArchitecture.Services.Payment.API.Entities
 {
     public class User
     {

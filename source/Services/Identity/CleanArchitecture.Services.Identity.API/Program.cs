@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Identity.API.Data;
+using CleanArchitecture.Shared.DataProtection.Redis;
 using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Authentication;
@@ -79,8 +80,17 @@ namespace CleanArchitecture.Services.Identity.API
                         .AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod().WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding"));
             });
 
-            var serviceName = builder.Configuration.GetValue<string>("ServiceName");            
-
+            var serviceName = builder.Configuration.GetValue<string>("ServiceName");
+            if (builder.Environment.IsDevelopment() == false)
+            {
+                var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
+                var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
+                var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
+                RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
+                RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
+                RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
+                builder.Services.AddRedis(serviceName, RedisConnections.CacheRedisConnection, RedisConnections.KekRedisConnection, RedisConnections.DekRedisConnection);
+            }
             var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
             Action<ResourceBuilder> configureResource = r => r.AddService(
     serviceName: serviceName,
@@ -98,11 +108,18 @@ namespace CleanArchitecture.Services.Identity.API
             .AddEntityFrameworkCoreInstrumentation()
             .AddGrpcCoreInstrumentation().AddNpgsql();
 
-        t.AddOtlpExporter(otlpOptions =>
+        if (builder.Environment.IsDevelopment() == true)
         {
-            otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-        });
-        t.AddConsoleExporter();
+            t.AddConsoleExporter();
+        }
+        else
+        {
+            t.AddRedisInstrumentation(RedisConnections.CacheRedisConnection).AddRedisInstrumentation(RedisConnections.KekRedisConnection).AddRedisInstrumentation(RedisConnections.DekRedisConnection);
+            t.AddOtlpExporter(otlpOptions =>
+            {
+                otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+            });
+        }
     })
     .WithMetrics(m =>
     {
@@ -112,11 +129,17 @@ namespace CleanArchitecture.Services.Identity.API
             .AddRuntimeInstrumentation()
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation();
-        m.AddOtlpExporter(otlpOptions =>
+        if (builder.Environment.IsDevelopment() == true)
         {
-            otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-        });
-        m.AddConsoleExporter();
+            m.AddConsoleExporter();
+        }
+        else
+        {
+            m.AddOtlpExporter(otlpOptions =>
+            {
+                otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+            });
+        }
     });
            
 
@@ -127,11 +150,17 @@ namespace CleanArchitecture.Services.Identity.API
                 var resourceBuilder = ResourceBuilder.CreateDefault();
                 configureResource(resourceBuilder);
                 options.SetResourceBuilder(resourceBuilder);
-                options.AddOtlpExporter(otlpOptions =>
+                if (builder.Environment.IsDevelopment() == true)
                 {
-                    otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-                });
-                options.AddConsoleExporter();
+                    options.AddConsoleExporter();
+                }
+                else
+                {
+                    options.AddOtlpExporter(otlpOptions =>
+                    {
+                        otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+                    });
+                }
 
             });
 
