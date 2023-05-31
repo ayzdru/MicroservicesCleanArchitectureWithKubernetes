@@ -37,6 +37,10 @@ namespace CleanArchitecture.Shared.DataProtection.Redis
 
         private static IDataProtectionBuilder PersistKeysToStackExchangeRedisInternal(IDataProtectionBuilder builder, Func<IDatabase> cacheDatabaseFactory, Func<IDatabase> kekDatabaseFactory, Func<IDatabase> dekDatabaseFactory, RedisKey dataProtectionKeysRedisKey, RedisKey keyEncryptionKeyRedisKey, RedisKey dataEncryptionKeyRedisKey)
         {
+            RedisConnections.DataProtectionKeysRedisKey = dataProtectionKeysRedisKey;
+            RedisConnections.KeyEncryptionKeyRedisKey = keyEncryptionKeyRedisKey;
+            RedisConnections.DataEncryptionKeyRedisKey = dataEncryptionKeyRedisKey;
+
             builder.Services.Configure<KeyManagementOptions>(options =>
             {
                 options.XmlRepository = new RedisXmlRepository(cacheDatabaseFactory, kekDatabaseFactory, dekDatabaseFactory, dataProtectionKeysRedisKey, keyEncryptionKeyRedisKey, dataEncryptionKeyRedisKey);

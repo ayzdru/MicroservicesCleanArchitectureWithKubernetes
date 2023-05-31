@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -179,10 +180,10 @@ namespace CleanArchitecture.Services.Identity.API
             });
             var identityUrl = builder.Configuration.GetValue<string>("IdentityUrl");
             healtchecks
-                .AddNpgSql(connectionString,"SELECT 1;",null, "PostgreSQL", HealthStatus.Unhealthy, new string[] { "postgresql", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
+                .AddNpgSql(connectionString, "SELECT 1;", null, "PostgreSQL", HealthStatus.Unhealthy, new string[] { "postgresql", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
                 .AddDbContextCheck<IdentityDbContext>("EntityFrameworkDbContext", HealthStatus.Unhealthy, new string[] { "entityframework", HealthCheckExtensions.Readiness })
-                .AddRabbitMQ(rabbitmqConnectionString, null, "RabbitMQ", null,new string[] {"rabbitmq", HealthCheckExtensions.Readiness}, HealthCheckExtensions.DefaultTimeOut)
-                .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+                .AddRabbitMQ(rabbitmqConnectionString, null, "RabbitMQ", null, new string[] { "rabbitmq", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+                
             var app = builder.Build();
             app.UseAllHealthChecks();
             app.UseForwardedHeaders();
@@ -213,7 +214,10 @@ namespace CleanArchitecture.Services.Identity.API
 
             app.MapRazorPages();
             app.MapControllers();
-
+            app.MapGet("/", async context =>
+            {
+                await context.Response.WriteAsync("Identity MicroService");
+            });
             app.Run();
         }
     }

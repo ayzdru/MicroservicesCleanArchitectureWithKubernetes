@@ -27,6 +27,7 @@ namespace CleanArchitecture.Services.Identity.API.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             if (RedisConnections.KekRedisConnection != null && RedisConnections.DekRedisConnection != null)
             {
                 var userEntityBuilder = modelBuilder.Entity<IdentityUser>();

@@ -24,6 +24,7 @@ namespace CleanArchitecture.Services.Catalog.API.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             if (RedisConnections.KekRedisConnection != null && RedisConnections.DekRedisConnection != null)
             {
                 var userEntityBuilder = modelBuilder.Entity<User>();

@@ -20,10 +20,7 @@ public class RedisXmlRepository : IXmlRepository
     {
         _cacheDatabaseFactory = databaseFactory;
         _kekDatabaseFactory = kekDatabaseFactory;
-        _dekDatabaseFactory =   dekDatabaseFactory;
-        RedisConnections.DataProtectionKeysRedisKey = dataProtectionKeysRedisKey;
-        RedisConnections.KeyEncryptionKeyRedisKey  = keyEncryptionKeyRedisKey;
-        RedisConnections.DataEncryptionKeyRedisKey = dataEncryptionKeyRedisKey;
+        _dekDatabaseFactory =   dekDatabaseFactory;       
     }
 
     public IReadOnlyCollection<XElement> GetAllElements()

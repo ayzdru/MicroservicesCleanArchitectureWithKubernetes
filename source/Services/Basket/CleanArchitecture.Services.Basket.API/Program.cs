@@ -195,7 +195,7 @@ namespace CleanArchitecture.Services.Basket.API
                 }
 
             });
-           
+            
             healtchecks.AddIdentityServer(new Uri(identityUrl),"IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
 
             var app = builder.Build();

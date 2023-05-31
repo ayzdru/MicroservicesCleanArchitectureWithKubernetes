@@ -21,6 +21,15 @@ namespace CleanArchitecture.Shared.HealthChecks
         public const string Readiness = "readiness ";
         public static IHealthChecksBuilder AddAllHealthChecks(this IServiceCollection services)
         {
+            services.AddHttpClient("IdentityServer").ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                ClientCertificateOptions = ClientCertificateOption.Manual,
+                ServerCertificateCustomValidationCallback =
+            (httpRequestMessage, cert, cetChain, policyErrors) =>
+            {
+                return true;
+            }
+            });
             services.AddSingleton<HostApplicationLifetimeEventsHostedService>();
             services.AddHostedService(p => p.GetRequiredService<HostApplicationLifetimeEventsHostedService>());
             var healthchecks = services.AddHealthChecks();
