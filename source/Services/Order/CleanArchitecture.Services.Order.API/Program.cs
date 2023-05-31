@@ -7,8 +7,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Order.API.Data;
 using CleanArchitecture.Services.Order.API.Grpc;
+using CleanArchitecture.Services.Order.API.Interfaces;
+using CleanArchitecture.Services.Order.API.Services;
 using CleanArchitecture.Shared.DataProtection.Redis;
 using CleanArchitecture.Shared.HealthChecks;
+using Confluent.Kafka.Extensions.OpenTelemetry;
 using DotNetCore.CAP.Messages;
 using Grpc.Net.Client;
 using HealthChecks.UI.Client;
@@ -43,7 +46,7 @@ namespace CleanArchitecture.Services.Order.API
             IdentityModelEventSource.ShowPII = true;
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             var builder = WebApplication.CreateBuilder(args);
-            var healtchecks = builder.Services.AddAllHealthChecks();
+            var healthChecks = builder.Services.AddAllHealthChecks();
             var connectionString = builder.Configuration.GetConnectionString("OrderConnectionString");
             builder.Services.AddDbContext<OrderDbContext>(options =>
                    options.UseNpgsql(connectionString));
@@ -67,12 +70,12 @@ namespace CleanArchitecture.Services.Order.API
             {
                 options.Authority = identityUrl;
                 options.RequireHttpsMetadata = true;
-                options.Audience = "order"; 
+                options.Audience = "order";
                 options.BackchannelHttpHandler = new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback =
                               (message, certificate, chain, sslPolicyErrors) => true
-                };                
+                };
             });
             builder.Services.AddCors(options =>
             {
@@ -81,7 +84,8 @@ namespace CleanArchitecture.Services.Order.API
                         .AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod().WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding"));
             });
             builder.Services.AddAuthorization();
-            builder.Services.AddGrpc(options => {
+            builder.Services.AddGrpc(options =>
+            {
                 options.EnableDetailedErrors = true;
                 options.MaxReceiveMessageSize = 2 * 1024 * 1024; // 2 MB
                 options.MaxSendMessageSize = 5 * 1024 * 1024; // 5 MB
@@ -91,19 +95,20 @@ namespace CleanArchitecture.Services.Order.API
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
-            var rabbitmqConnectionString = builder.Configuration.GetValue<string>("RabbitMQ");
+            var kafkaConnectionString = builder.Configuration.GetValue<string>("Kafka");
+            builder.Services.AddTransient<ISubscriberService, SubscriberService>();
             builder.Services.AddCap(x =>
             {
                 x.UseEntityFramework<OrderDbContext>();
                 x.UseDashboard();
-                x.UseRabbitMQ(rabbitmqConnectionString);
+                x.UseKafka(kafkaConnectionString);
                 x.FailedRetryCount = 5;
             });
 
             builder.Services.AddHttpContextAccessor();
 
 
-            var basketUrl = builder.Configuration.GetValue<string>("BasketUrl");  
+            var basketUrl = builder.Configuration.GetValue<string>("BasketUrl");
 
             builder.Services.AddScoped<ITokenProvider, AppTokenProvider>();
 
@@ -132,21 +137,17 @@ namespace CleanArchitecture.Services.Order.API
         }
     });
 
-
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
-            if (builder.Environment.IsDevelopment() == false)
-            {
-                var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
-                var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
-                var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
-                RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
-                RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
-                RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
-                healtchecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                healtchecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                healtchecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                builder.Services.AddRedis(serviceName, RedisConnections.CacheRedisConnection, RedisConnections.KekRedisConnection, RedisConnections.DekRedisConnection);
-            }
+            var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
+            var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
+            var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
+
+            builder.Services.AddRedis(serviceName, cacheRedisConnectionString, kekRedisConnectionString, dekRedisConnectionString);
+            healthChecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+            healthChecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+            healthChecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+
+
             var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
             Action<ResourceBuilder> configureResource = r => r.AddService(
     serviceName: serviceName,
@@ -163,7 +164,7 @@ namespace CleanArchitecture.Services.Order.API
             .AddCapInstrumentation()
             .AddGrpcClientInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
-            .AddGrpcCoreInstrumentation().AddNpgsql();
+            .AddGrpcCoreInstrumentation().AddNpgsql().AddConfluentKafkaInstrumentation();
 
         if (builder.Environment.IsDevelopment() == true)
         {
@@ -218,10 +219,10 @@ namespace CleanArchitecture.Services.Order.API
                 }
 
             });
-            healtchecks
+            healthChecks
                 .AddNpgSql(connectionString, "SELECT 1;", null, "PostgreSQL", HealthStatus.Unhealthy, new string[] { "postgresql", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
                 .AddDbContextCheck<OrderDbContext>("EntityFrameworkDbContext", HealthStatus.Unhealthy, new string[] { "entityframework", HealthCheckExtensions.Readiness })
-                .AddRabbitMQ(rabbitmqConnectionString, null, "RabbitMQ", null, new string[] { "rabbitmq", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
+                .AddKafka(new Confluent.Kafka.ProducerConfig() { BootstrapServers = kafkaConnectionString }, null, "Kafka", null, new string[] { "kafka", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
                 .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
             var app = builder.Build();
 

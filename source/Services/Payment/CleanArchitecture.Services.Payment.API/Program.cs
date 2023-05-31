@@ -7,8 +7,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Payment.API.Data;
 using CleanArchitecture.Services.Payment.API.Grpc;
+using CleanArchitecture.Services.Payment.API.Interfaces;
+using CleanArchitecture.Services.Payment.API.Services;
 using CleanArchitecture.Shared.DataProtection.Redis;
 using CleanArchitecture.Shared.HealthChecks;
+using Confluent.Kafka.Extensions.OpenTelemetry;
 using DotNetCore.CAP.Messages;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -41,7 +44,7 @@ namespace CleanArchitecture.Services.Payment.API
             IdentityModelEventSource.ShowPII = true;
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             var builder = WebApplication.CreateBuilder(args);
-            var healtchecks = builder.Services.AddAllHealthChecks();
+            var healthChecks = builder.Services.AddAllHealthChecks();
             var connectionString = builder.Configuration.GetConnectionString("PaymentConnectionString");
             builder.Services.AddDbContext<PaymentDbContext>(options =>
                    options.UseNpgsql(connectionString));
@@ -66,7 +69,7 @@ namespace CleanArchitecture.Services.Payment.API
             {
                 options.Authority = identityUrl;
                 options.RequireHttpsMetadata = false;
-                options.Audience = "payment"; 
+                options.Audience = "payment";
                 options.BackchannelHttpHandler = new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback =
@@ -92,29 +95,27 @@ namespace CleanArchitecture.Services.Payment.API
                     new[] { "application/octet-stream" });
             });
             builder.Services.AddTransient<PaymentService>();
-            var rabbitmqConnectionString = builder.Configuration.GetValue<string>("RabbitMQ");
+            builder.Services.AddTransient<ISubscriberService, SubscriberService>();
+            var kafkaConnectionString = builder.Configuration.GetValue<string>("Kafka");
             builder.Services.AddCap(x =>
             {
                 x.UseEntityFramework<PaymentDbContext>();
                 x.UseDashboard();
-                x.UseRabbitMQ(rabbitmqConnectionString);
+                x.UseKafka(kafkaConnectionString);
                 x.FailedRetryCount = 5;
             });
 
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
-            if (builder.Environment.IsDevelopment() == false)
-            {
-                var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
-                var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
-                var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
-                RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
-                RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
-                RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
-                healtchecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                healtchecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                healtchecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                builder.Services.AddRedis(serviceName, RedisConnections.CacheRedisConnection, RedisConnections.KekRedisConnection, RedisConnections.DekRedisConnection);
-            }
+            var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
+            var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
+            var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
+
+            builder.Services.AddRedis(serviceName, cacheRedisConnectionString, kekRedisConnectionString, dekRedisConnectionString);
+            healthChecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+            healthChecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+            healthChecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+
+
             var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
             Action<ResourceBuilder> configureResource = r => r.AddService(
     serviceName: serviceName,
@@ -131,7 +132,7 @@ namespace CleanArchitecture.Services.Payment.API
             .AddCapInstrumentation()
             .AddGrpcClientInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
-            .AddGrpcCoreInstrumentation().AddNpgsql();
+            .AddGrpcCoreInstrumentation().AddNpgsql().AddConfluentKafkaInstrumentation();
 
         if (builder.Environment.IsDevelopment() == true)
         {
@@ -186,10 +187,10 @@ namespace CleanArchitecture.Services.Payment.API
                 }
 
             });
-            healtchecks
+            healthChecks
                .AddNpgSql(connectionString, "SELECT 1;", null, "PostgreSQL", HealthStatus.Unhealthy, new string[] { "postgresql", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
                .AddDbContextCheck<PaymentDbContext>("EntityFrameworkDbContext", HealthStatus.Unhealthy, new string[] { "entityframework", HealthCheckExtensions.Readiness })
-               .AddRabbitMQ(rabbitmqConnectionString, null, "RabbitMQ", null, new string[] { "rabbitmq", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
+               .AddKafka(new Confluent.Kafka.ProducerConfig() { BootstrapServers = kafkaConnectionString }, null, "Kafka", null, new string[] { "kafka", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
                .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
             var app = builder.Build();
 

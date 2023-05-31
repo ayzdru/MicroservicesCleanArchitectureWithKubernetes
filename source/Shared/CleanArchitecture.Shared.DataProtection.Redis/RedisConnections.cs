@@ -10,10 +10,14 @@ namespace CleanArchitecture.Shared.DataProtection.Redis
 {
     public class RedisConnections
     {
+      
         public static RedisKey DataProtectionKeysRedisKey { get; set; }
         public static RedisKey KeyEncryptionKeyRedisKey { get; set; }
 
         public static RedisKey DataEncryptionKeyRedisKey { get; set; }
+
+        public static RedisKey KeySuffix { get; } = "-Key";
+        public static RedisKey IVSuffix { get;} = "-IV";
 
 
         private static Lazy<ConnectionMultiplexer> _cacheLazyRedisConnection;
@@ -66,19 +70,26 @@ namespace CleanArchitecture.Shared.DataProtection.Redis
             }, true);
         }
 
-        public static AesProvider GetAesProvider(Func<IDatabase> databaseFactory, RedisKey redisKey, AesProvider aesProvider = null)
+        private static AesProvider GetAesProvider(ConnectionMultiplexer connectionMultiplexer, RedisKey redisKey, AesProvider aesProvider = null)
         {
-            var database = databaseFactory();
+            var database = connectionMultiplexer.GetDatabase();
 
-            var keyRedisKey = redisKey.ToString() + "-Key";
+            var keyRedisKey = redisKey.ToString() + KeySuffix.ToString();
             var key = database.StringGet(keyRedisKey);
             string encryptionKey = aesProvider != null ? aesProvider.Decrypt(key.ToString()) : key.ToString();
 
-            var ivRedisKey = redisKey.ToString() + "-IV";
+            var ivRedisKey = redisKey.ToString() + IVSuffix.ToString();
             var ivKey = database.StringGet(ivRedisKey);
             string ivEncryptionKey = aesProvider != null ? aesProvider.Decrypt(ivKey.ToString()) : ivKey.ToString();
             return new AesProvider(encryptionKey, ivEncryptionKey);
         }
-       
+        public static AesProvider GetKekAesProvider()
+        {
+            return GetAesProvider(KekRedisConnection, KeyEncryptionKeyRedisKey);
+        }
+        public static AesProvider GetDekAesProvider(AesProvider kekAesProvider)
+        {
+            return GetAesProvider(DekRedisConnection, DataEncryptionKeyRedisKey, kekAesProvider);
+        }
     }
 }

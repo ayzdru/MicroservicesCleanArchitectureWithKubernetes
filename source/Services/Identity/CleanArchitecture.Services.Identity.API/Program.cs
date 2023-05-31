@@ -4,8 +4,11 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Identity.API.Data;
+using CleanArchitecture.Services.Identity.API.Services;
 using CleanArchitecture.Shared.DataProtection.Redis;
 using CleanArchitecture.Shared.HealthChecks;
+using Confluent.Kafka.Extensions.OpenTelemetry;
+using DotNetCore.CAP;
 using Duende.IdentityServer.EntityFramework.Options;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Authentication;
@@ -40,7 +43,7 @@ namespace CleanArchitecture.Services.Identity.API
             IdentityModelEventSource.ShowPII = true;
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             var builder = WebApplication.CreateBuilder(args);
-            var healtchecks = builder.Services.AddAllHealthChecks();
+            var healthChecks = builder.Services.AddAllHealthChecks();
             var connectionString = builder.Configuration.GetConnectionString("IdentityConnectionString");
 
             builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -50,11 +53,17 @@ namespace CleanArchitecture.Services.Identity.API
             });
 
             builder.Services.AddDbContext<IdentityDbContext>(options =>
-                   options.UseNpgsql(connectionString));
+            {
+                options.UseNpgsql(connectionString);
+                options.UseTriggers(triggerOptions =>
+                {
+                    triggerOptions.AddTrigger<UserTriggers>();
+                });
+            });
 
             var optionsBuilder = new DbContextOptionsBuilder<IdentityDbContext>();
             optionsBuilder.UseNpgsql(connectionString);
-            OperationalStoreOptions storeOptions = new OperationalStoreOptions{};
+            OperationalStoreOptions storeOptions = new OperationalStoreOptions { };
             IOptions<OperationalStoreOptions> operationalStoreOptions = Options.Create(storeOptions);
 
             using (var dbContext = new IdentityDbContext(optionsBuilder.Options, operationalStoreOptions))
@@ -68,9 +77,9 @@ namespace CleanArchitecture.Services.Identity.API
 
             builder.Services.AddIdentityServer(options =>
             {
-             
+
             })
-                .AddSigningCredentials()                
+                .AddSigningCredentials()
                 .AddApiAuthorization<IdentityUser, IdentityDbContext>();
 
             builder.Services.AddAuthentication()
@@ -84,28 +93,24 @@ namespace CleanArchitecture.Services.Identity.API
                     builder => builder
                         .AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod().WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding"));
             });
-            var rabbitmqConnectionString = builder.Configuration.GetValue<string>("RabbitMQ");
+            var kafkaConnectionString = builder.Configuration.GetValue<string>("Kafka");
             builder.Services.AddCap(x =>
             {
                 x.UseEntityFramework<IdentityDbContext>();
                 x.UseDashboard();
-                x.UseRabbitMQ(rabbitmqConnectionString);
+                x.UseKafka(kafkaConnectionString);
                 x.FailedRetryCount = 5;
             });
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
-            if (builder.Environment.IsDevelopment() == false)
-            {
-                var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
-                var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
-                var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
-                RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
-                RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
-                RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
-                healtchecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                healtchecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                healtchecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                builder.Services.AddRedis(serviceName, RedisConnections.CacheRedisConnection, RedisConnections.KekRedisConnection, RedisConnections.DekRedisConnection);
-            }
+            var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
+            var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
+            var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
+
+            builder.Services.AddRedis(serviceName, cacheRedisConnectionString, kekRedisConnectionString, dekRedisConnectionString);
+            healthChecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+            healthChecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+            healthChecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+
             var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
             Action<ResourceBuilder> configureResource = r => r.AddService(
     serviceName: serviceName,
@@ -121,7 +126,7 @@ namespace CleanArchitecture.Services.Identity.API
             .AddAspNetCoreInstrumentation()
             .AddGrpcClientInstrumentation()
             .AddEntityFrameworkCoreInstrumentation()
-            .AddGrpcCoreInstrumentation().AddNpgsql();
+            .AddGrpcCoreInstrumentation().AddNpgsql().AddConfluentKafkaInstrumentation();
 
         if (builder.Environment.IsDevelopment() == true)
         {
@@ -156,7 +161,7 @@ namespace CleanArchitecture.Services.Identity.API
             });
         }
     });
-           
+
 
             builder.Logging.ClearProviders();
 
@@ -179,11 +184,12 @@ namespace CleanArchitecture.Services.Identity.API
 
             });
             var identityUrl = builder.Configuration.GetValue<string>("IdentityUrl");
-            healtchecks
+            healthChecks
                 .AddNpgSql(connectionString, "SELECT 1;", null, "PostgreSQL", HealthStatus.Unhealthy, new string[] { "postgresql", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
                 .AddDbContextCheck<IdentityDbContext>("EntityFrameworkDbContext", HealthStatus.Unhealthy, new string[] { "entityframework", HealthCheckExtensions.Readiness })
-                .AddRabbitMQ(rabbitmqConnectionString, null, "RabbitMQ", null, new string[] { "rabbitmq", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                
+                .AddKafka(new Confluent.Kafka.ProducerConfig() { BootstrapServers = kafkaConnectionString }, null, "Kafka", null, new string[] { "kafka", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+
+
             var app = builder.Build();
             app.UseAllHealthChecks();
             app.UseForwardedHeaders();
@@ -194,14 +200,14 @@ namespace CleanArchitecture.Services.Identity.API
             else
             {
                 app.UseHsts();
-            }           
+            }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
             app.UseCors("CorsPolicy");
             app.Use(async (context, next) =>
             {
-                context.Response.Headers.Add("Content-Security-Policy", "script-src 'unsafe-inline'");
+                //context.Response.Headers.Add("Content-Security-Policy", "script-src 'unsafe-inline'");
                 context.SetIdentityServerOrigin(identityUrl);
                 await next();
             });

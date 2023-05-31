@@ -7,8 +7,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Catalog.API.Data;
 using CleanArchitecture.Services.Catalog.API.Grpc;
+using CleanArchitecture.Services.Catalog.API.Interfaces;
+using CleanArchitecture.Services.Catalog.API.Services;
 using CleanArchitecture.Shared.DataProtection.Redis;
 using CleanArchitecture.Shared.HealthChecks;
+using Confluent.Kafka.Extensions.OpenTelemetry;
 using DotNetCore.CAP;
 using DotNetCore.CAP.Messages;
 using HealthChecks.UI.Client;
@@ -19,6 +22,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -39,24 +43,28 @@ namespace CleanArchitecture.Services.Catalog.API
             ServicePointManager.ServerCertificateValidationCallback +=
               (sender, cert, chain, sslPolicyErrors) => true;
             IdentityModelEventSource.ShowPII = true;
+
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             var builder = WebApplication.CreateBuilder(args);
-            var healtchecks = builder.Services.AddAllHealthChecks();
+            var healthChecks = builder.Services.AddAllHealthChecks();
 
             var connectionString = builder.Configuration.GetConnectionString("CatalogConnectionString");
             builder.Services.AddDbContext<CatalogDbContext>(options =>
                    options.UseNpgsql(connectionString));
 
+
+           
+
             var optionsBuilder = new DbContextOptionsBuilder<CatalogDbContext>();
             optionsBuilder.UseNpgsql(connectionString);
+            
             using (var dbContext = new CatalogDbContext(optionsBuilder.Options))
             {
-                if (dbContext.Database.EnsureCreated() == true)
+                //if the number of replicas is greater than one use Kubernetes Jobs, init containers!                
+                dbContext.Database.Migrate();
+                try
                 {
-                    //if the number of replicas is greater than 1 use Kubernetes Jobs and init containers!                
-                    dbContext.Database.Migrate();
-
                     if (!dbContext.Products.Any())
                     {
                         for (int i = 0; i < 10; i++)
@@ -66,9 +74,12 @@ namespace CleanArchitecture.Services.Catalog.API
                             dbContext.Products.Add(product);
                         }
                         dbContext.SaveChanges();
-                    }
+                    }                   
                 }
+                catch
+                {
 
+                }
             }
 
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("sub");
@@ -109,28 +120,26 @@ namespace CleanArchitecture.Services.Catalog.API
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
-            var rabbitmqConnectionString = builder.Configuration.GetValue<string>("RabbitMQ");
-        builder.Services.AddCap(x =>
+            builder.Services.AddTransient<ISubscriberService, SubscriberService>();
+            var kafkaConnectionString = builder.Configuration.GetValue<string>("Kafka");
+            builder.Services.AddCap(x =>
             {
                 x.UseEntityFramework<CatalogDbContext>();
                 x.UseDashboard();
-                x.UseRabbitMQ(rabbitmqConnectionString);
-                x.FailedRetryCount = 5;                
+                x.UseKafka(kafkaConnectionString);
+                x.FailedRetryCount = 5;               
             });
+
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
-            if (builder.Environment.IsDevelopment() == false)
-            {
-                var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
-                var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
-                var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
-                RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
-                RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
-                RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
-                healtchecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                healtchecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                healtchecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                builder.Services.AddRedis(serviceName, RedisConnections.CacheRedisConnection, RedisConnections.KekRedisConnection, RedisConnections.DekRedisConnection);
-            }
+            var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
+            var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
+            var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
+
+            builder.Services.AddRedis(serviceName, cacheRedisConnectionString, kekRedisConnectionString, dekRedisConnectionString);
+            healthChecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+            healthChecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+            healthChecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+
             var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
             Action<ResourceBuilder> configureResource = r => r.AddService(
     serviceName: serviceName,
@@ -148,7 +157,7 @@ namespace CleanArchitecture.Services.Catalog.API
             .AddEntityFrameworkCoreInstrumentation()
             .AddGrpcCoreInstrumentation()
             .AddCapInstrumentation()
-            .AddNpgsql();
+            .AddNpgsql().AddConfluentKafkaInstrumentation();
 
         if (builder.Environment.IsDevelopment() == true)
         {
@@ -203,17 +212,13 @@ namespace CleanArchitecture.Services.Catalog.API
                 }
 
             });
-            healtchecks
+            healthChecks
               .AddNpgSql(connectionString, "SELECT 1;", null, "PostgreSQL", HealthStatus.Unhealthy, new string[] { "postgresql", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
               .AddDbContextCheck<CatalogDbContext>("EntityFrameworkDbContext", HealthStatus.Unhealthy, new string[] { "entityframework", HealthCheckExtensions.Readiness })
-              .AddRabbitMQ(rabbitmqConnectionString, null, "RabbitMQ", null, new string[] { "rabbitmq", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
+              .AddKafka(new Confluent.Kafka.ProducerConfig() { BootstrapServers = kafkaConnectionString }, null, "Kafka", null, new string[] { "kafka", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
               .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
             var app = builder.Build();
-            app.MapHealthChecks("/healthz", new HealthCheckOptions
-            {
-                Predicate = _ => true,
-                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-            });
+            app.UseAllHealthChecks();
             app.UseResponseCompression();
             if (app.Environment.IsDevelopment())
             {

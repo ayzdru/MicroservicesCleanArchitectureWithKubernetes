@@ -14,6 +14,7 @@ using CleanArchitecture.Shared.DataProtection.Redis;
 using CleanArchitecture.Shared.HealthChecks;
 using Grpc.Net.Client;
 using HealthChecks.UI.Client;
+using HealthChecks.UI.Core.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -36,7 +37,7 @@ namespace CleanArchitecture.Services.Basket.API
 {
     public class Program
     {
-        
+
         public static void Main(string[] args)
         {
             ServicePointManager.ServerCertificateValidationCallback +=
@@ -45,7 +46,7 @@ namespace CleanArchitecture.Services.Basket.API
 
 
             var builder = WebApplication.CreateBuilder(args);
-            var healtchecks = builder.Services.AddAllHealthChecks();
+            var healthChecks = builder.Services.AddAllHealthChecks();
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("sub");
 
             var identityUrl = builder.Configuration.GetValue<string>("IdentityUrl");
@@ -112,19 +113,16 @@ namespace CleanArchitecture.Services.Basket.API
         }
     });
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
-            if (builder.Environment.IsDevelopment() == false)
-            {
-                var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
-                var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
-                var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
-                RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
-                RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
-                RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
-                healtchecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                healtchecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                healtchecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-                builder.Services.AddRedis(serviceName, RedisConnections.CacheRedisConnection, RedisConnections.KekRedisConnection, RedisConnections.DekRedisConnection);
-            }
+            var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
+            var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
+            var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
+
+            builder.Services.AddRedis(serviceName, cacheRedisConnectionString, kekRedisConnectionString, dekRedisConnectionString);
+            healthChecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+            healthChecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+            healthChecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+
+
             var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
             Action<ResourceBuilder> configureResource = r => r.AddService(
     serviceName: serviceName,
@@ -195,8 +193,8 @@ namespace CleanArchitecture.Services.Basket.API
                 }
 
             });
-            
-            healtchecks.AddIdentityServer(new Uri(identityUrl),"IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+
+            healthChecks.AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
 
             var app = builder.Build();
             app.UseAllHealthChecks();
@@ -221,7 +219,7 @@ namespace CleanArchitecture.Services.Basket.API
             app.MapGet("/", async context =>
             {
                 await context.Response.WriteAsync("Basket MicroService");
-            });           
+            });
             app.Run();
         }
     }

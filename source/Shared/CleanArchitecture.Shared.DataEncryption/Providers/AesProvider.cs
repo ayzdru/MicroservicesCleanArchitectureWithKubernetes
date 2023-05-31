@@ -107,7 +107,7 @@ public class AesProvider : IEncryptionProvider
     /// </remarks>
     /// <param name="keySize">AES Key size</param>
     /// <returns></returns>
-    public static AesKeyInfo GenerateKey(AesKeySize keySize)
+    public static (string Key, string IV) GenerateKey(AesKeySize keySize)
     {
         var aes = Aes.Create();
 
@@ -117,6 +117,6 @@ public class AesProvider : IEncryptionProvider
         aes.GenerateKey();
         aes.GenerateIV();
 
-        return new AesKeyInfo(aes.Key, aes.IV);
+        return (Convert.ToBase64String(aes.Key), Convert.ToBase64String(aes.IV));
     }
 }

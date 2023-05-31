@@ -18,8 +18,8 @@ namespace CleanArchitecture.Services.Catalog.API.Data
         {
             if (RedisConnections.KekRedisConnection != null && RedisConnections.DekRedisConnection != null)
             {
-                var kekAesProvider = RedisConnections.GetAesProvider(() => RedisConnections.KekRedisConnection.GetDatabase(), RedisConnections.KeyEncryptionKeyRedisKey);
-                _encryptionProvider = RedisConnections.GetAesProvider(() => RedisConnections.DekRedisConnection.GetDatabase(), RedisConnections.DataEncryptionKeyRedisKey, kekAesProvider);
+                var kekAesProvider = RedisConnections.GetKekAesProvider();
+                _encryptionProvider = RedisConnections.GetDekAesProvider(kekAesProvider);
             }
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)

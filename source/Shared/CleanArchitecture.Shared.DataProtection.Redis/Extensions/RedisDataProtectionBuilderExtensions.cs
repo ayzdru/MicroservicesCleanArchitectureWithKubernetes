@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
@@ -15,52 +13,59 @@ namespace CleanArchitecture.Shared.DataProtection.Redis
         private const string DataProtectionKeysName = "DataProtection-Keys";
         private const string KeyEncryptionKeyName = "KeyEncryption";
         private const string DataEncryptionKeyName = "DataEncryption";
-               
-        public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, Func<IDatabase> cacheDatabaseFactory, Func<IDatabase> kekDatabaseFactory, Func<IDatabase> dekDatabaseFactory, RedisKey dataProtectionKeysRedisKey, RedisKey keyEncryptionKeyRedisKey, RedisKey dataEncryptionKeyRedisKey)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-            ArgumentNullException.ThrowIfNull(cacheDatabaseFactory);
-            return PersistKeysToStackExchangeRedisInternal(builder, cacheDatabaseFactory, kekDatabaseFactory, dekDatabaseFactory, dataProtectionKeysRedisKey, keyEncryptionKeyRedisKey, dataEncryptionKeyRedisKey);
-        }
 
-        public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, IConnectionMultiplexer cacheConnectionMultiplexer, IConnectionMultiplexer kekConnectionMultiplexer, IConnectionMultiplexer dekConnectionMultiplexer)
+        private static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder)
         {
-            return PersistKeysToStackExchangeRedis(builder, cacheConnectionMultiplexer, kekConnectionMultiplexer, dekConnectionMultiplexer, DataProtectionKeysName, KeyEncryptionKeyName, DataEncryptionKeyName);
-        }
-
-        public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, IConnectionMultiplexer cacheConnectionMultiplexer, IConnectionMultiplexer kekConnectionMultiplexer, IConnectionMultiplexer dekConnectionMultiplexer, RedisKey dataProtectionKeysRedisKey, RedisKey keyEncryptionKeyRedisKey, RedisKey dataEncryptionKeyRedisKey)
-        {
-            ArgumentNullException.ThrowIfNull(builder);
-            ArgumentNullException.ThrowIfNull(cacheConnectionMultiplexer);
-            return PersistKeysToStackExchangeRedisInternal(builder, () => cacheConnectionMultiplexer.GetDatabase(), () => kekConnectionMultiplexer.GetDatabase(), () => dekConnectionMultiplexer.GetDatabase(), dataProtectionKeysRedisKey, keyEncryptionKeyRedisKey, dataEncryptionKeyRedisKey);
-        }
-
-        private static IDataProtectionBuilder PersistKeysToStackExchangeRedisInternal(IDataProtectionBuilder builder, Func<IDatabase> cacheDatabaseFactory, Func<IDatabase> kekDatabaseFactory, Func<IDatabase> dekDatabaseFactory, RedisKey dataProtectionKeysRedisKey, RedisKey keyEncryptionKeyRedisKey, RedisKey dataEncryptionKeyRedisKey)
-        {
-            RedisConnections.DataProtectionKeysRedisKey = dataProtectionKeysRedisKey;
-            RedisConnections.KeyEncryptionKeyRedisKey = keyEncryptionKeyRedisKey;
-            RedisConnections.DataEncryptionKeyRedisKey = dataEncryptionKeyRedisKey;
-
+            
             builder.Services.Configure<KeyManagementOptions>(options =>
             {
-                options.XmlRepository = new RedisXmlRepository(cacheDatabaseFactory, kekDatabaseFactory, dekDatabaseFactory, dataProtectionKeysRedisKey, keyEncryptionKeyRedisKey, dataEncryptionKeyRedisKey);
+                options.XmlRepository = new RedisXmlRepository();
             });
             return builder;
         }
 
-        public static IServiceCollection AddRedis(this IServiceCollection services, string serviceName, ConnectionMultiplexer cacheRedisConnection, ConnectionMultiplexer kekRedisConnection, ConnectionMultiplexer dekRedisConnection)
+        public static IServiceCollection AddRedis(this IServiceCollection services, string serviceName,string cacheRedisConnectionString, string kekRedisConnectionString,string dekRedisConnectionString)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
-          
+            
 
-            services.AddSingleton<IConnectionMultiplexer>(sp => cacheRedisConnection);
-            services.AddDataProtection().PersistKeysToStackExchangeRedis(cacheRedisConnection, kekRedisConnection, dekRedisConnection);
+
+            try
+            {
+                RedisConnections.DataProtectionKeysRedisKey = DataProtectionKeysName;
+                RedisConnections.KeyEncryptionKeyRedisKey = KeyEncryptionKeyName;
+                RedisConnections.DataEncryptionKeyRedisKey = DataEncryptionKeyName;
+
+                RedisConnections.SetCacheRedisConnection(cacheRedisConnectionString);
+                RedisConnections.SetKekRedisConnection(kekRedisConnectionString);
+                RedisConnections.SetDekRedisConnection(dekRedisConnectionString);
+
+                var kek = RedisConnections.KekRedisConnection.GetDatabase();
+                if (kek.KeyExists(RedisConnections.KeyEncryptionKeyRedisKey + RedisConnections.KeySuffix) == false)
+                {
+                    var kekInfo = AesProvider.GenerateKey(AesKeySize.AES256Bits);
+                    kek.StringSet(RedisConnections.KeyEncryptionKeyRedisKey + RedisConnections.KeySuffix, kekInfo.Key);
+                    kek.StringSet(RedisConnections.KeyEncryptionKeyRedisKey + RedisConnections.IVSuffix, kekInfo.IV);
+
+                    var dekInfo = AesProvider.GenerateKey(AesKeySize.AES256Bits);
+                    var dek = RedisConnections.DekRedisConnection.GetDatabase();
+                    dek.StringSet(RedisConnections.DataEncryptionKeyRedisKey + RedisConnections.KeySuffix, dekInfo.Key);
+                    dek.StringSet(RedisConnections.DataEncryptionKeyRedisKey + RedisConnections.IVSuffix, dekInfo.IV);
+                }
+            }
+            catch 
+            {
+
+            }
+            
+            services.AddSingleton<IConnectionMultiplexer>(sp => RedisConnections.CacheRedisConnection);
+            services.AddDataProtection().PersistKeysToStackExchangeRedis();
             services.AddStackExchangeRedisCache(options =>
             {
-                options.ConnectionMultiplexerFactory = () => Task.FromResult((IConnectionMultiplexer)cacheRedisConnection);
+                options.ConnectionMultiplexerFactory = () => Task.FromResult((IConnectionMultiplexer)RedisConnections.CacheRedisConnection);
                 options.InstanceName = serviceName;
             });
 

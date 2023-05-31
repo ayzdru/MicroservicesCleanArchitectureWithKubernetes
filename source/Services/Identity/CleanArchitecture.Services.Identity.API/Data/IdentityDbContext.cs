@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CleanArchitecture.Services.Identity.API.Data
@@ -21,8 +22,8 @@ namespace CleanArchitecture.Services.Identity.API.Data
         {
             if (RedisConnections.KekRedisConnection != null && RedisConnections.DekRedisConnection != null)
             {
-                var kekAesProvider = RedisConnections.GetAesProvider(() => RedisConnections.KekRedisConnection.GetDatabase(), RedisConnections.KeyEncryptionKeyRedisKey);
-                _encryptionProvider = RedisConnections.GetAesProvider(() => RedisConnections.DekRedisConnection.GetDatabase(), RedisConnections.DataEncryptionKeyRedisKey, kekAesProvider);
+                var kekAesProvider = RedisConnections.GetKekAesProvider();
+                _encryptionProvider = RedisConnections.GetDekAesProvider(kekAesProvider);
             }
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -40,6 +41,6 @@ namespace CleanArchitecture.Services.Identity.API.Data
 
                 modelBuilder.UseEncryption(_encryptionProvider);
             }
-        }
+        }      
     }
 }
