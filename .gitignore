@@ -351,3 +351,5 @@ MigrationBackup/
 /source/CaptainDocker.Entities.DockerConnection.json
 /source/CaptainDocker.Entities.DockerRegistry.json
 /source/CaptainDocker.Entities.Project.json
+/source/CaptainDocker.Entities.Project.json
+/source/CaptainDocker.Entities.DockerRegistry.json
