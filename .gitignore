@@ -348,4 +348,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/source/CaptainDocker.Entities.DockerConnection.json
 /source/CaptainDocker.Entities.DockerRegistry.json
+/source/CaptainDocker.Entities.Project.json
