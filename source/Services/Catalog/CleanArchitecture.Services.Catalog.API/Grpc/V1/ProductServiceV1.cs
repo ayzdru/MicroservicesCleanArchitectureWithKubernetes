@@ -8,12 +8,12 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
-namespace CleanArchitecture.Services.Catalog.API.Grpc
+namespace CleanArchitecture.Services.Catalog.API.Grpc.V1
 {   
-    public class ProductService : Product.ProductBase
+    public class ProductServiceV1 : Product.ProductBase
     {
         private readonly CatalogDbContext _catalogDbContext;
-        public ProductService(CatalogDbContext catalogDbContext)
+        public ProductServiceV1(CatalogDbContext catalogDbContext)
         {
             _catalogDbContext = catalogDbContext;
         }

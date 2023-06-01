@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Order.API.Data;
-using CleanArchitecture.Services.Order.API.Grpc;
+using CleanArchitecture.Services.Order.API.Grpc.V1;
 using CleanArchitecture.Services.Order.API.Interfaces;
 using CleanArchitecture.Services.Order.API.Services;
 using CleanArchitecture.Shared.DataProtection.Redis;
@@ -28,12 +29,14 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using StackExchange.Redis;
+using static CleanArchitecture.Services.Basket.API.Grpc.V1.Basket;
 
 namespace CleanArchitecture.Services.Order.API
 {
@@ -46,6 +49,7 @@ namespace CleanArchitecture.Services.Order.API
             IdentityModelEventSource.ShowPII = true;
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddGrpcHealthChecks();
             var healthChecks = builder.Services.AddAllHealthChecks();
             var connectionString = builder.Configuration.GetConnectionString("OrderConnectionString");
             builder.Services.AddDbContext<OrderDbContext>(options =>
@@ -86,9 +90,21 @@ namespace CleanArchitecture.Services.Order.API
             builder.Services.AddAuthorization();
             builder.Services.AddGrpc(options =>
             {
-                options.EnableDetailedErrors = true;
+                if (builder.Environment.IsDevelopment() == true)
+                {
+                    options.EnableDetailedErrors = true;
+                }
                 options.MaxReceiveMessageSize = 2 * 1024 * 1024; // 2 MB
                 options.MaxSendMessageSize = 5 * 1024 * 1024; // 5 MB
+            }).AddJsonTranscoding();
+            builder.Services.AddGrpcSwagger();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1",
+                    new OpenApiInfo { Title = "gRPC transcoding", Version = "v1" });
+                var filePath = Path.Combine(System.AppContext.BaseDirectory, "Server.xml");
+                c.IncludeXmlComments(filePath);
+                c.IncludeGrpcXmlComments(filePath, includeControllerXmlComments: true);
             });
             builder.Services.AddResponseCompression(opts =>
             {
@@ -112,7 +128,7 @@ namespace CleanArchitecture.Services.Order.API
 
             builder.Services.AddScoped<ITokenProvider, AppTokenProvider>();
 
-            builder.Services.AddGrpcClient<CleanArchitecture.Services.Basket.API.Grpc.Basket.BasketClient>(nameof(CleanArchitecture.Services.Basket.API.Grpc.Basket.BasketClient), o =>
+            builder.Services.AddGrpcClient<BasketClient>(nameof(BasketClient), o =>
             {
                 o.Address = new Uri(basketUrl);
                 o.ChannelOptionsActions.Add((opt) =>
@@ -225,7 +241,11 @@ namespace CleanArchitecture.Services.Order.API
                 .AddKafka(new Confluent.Kafka.ProducerConfig() { BootstrapServers = kafkaConnectionString }, null, "Kafka", null, new string[] { "kafka", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
                 .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
             var app = builder.Build();
-
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Basket API V1");
+            });
             app.UseAllHealthChecks();
             app.UseResponseCompression();
             if (app.Environment.IsDevelopment())
@@ -243,8 +263,8 @@ namespace CleanArchitecture.Services.Order.API
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapGrpcService<OrderService>().RequireCors("CorsPolicy").EnableGrpcWeb();
-
+            app.MapGrpcService<OrderServiceV1>().RequireCors("CorsPolicy").EnableGrpcWeb();
+            app.MapGrpcHealthChecksService().RequireCors("CorsPolicy").EnableGrpcWeb();
             app.MapGet("/", async context =>
             {
                 await context.Response.WriteAsync("Order MicroService");

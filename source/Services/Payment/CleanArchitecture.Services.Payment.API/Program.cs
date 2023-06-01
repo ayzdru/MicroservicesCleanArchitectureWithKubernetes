@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Payment.API.Data;
-using CleanArchitecture.Services.Payment.API.Grpc;
+using CleanArchitecture.Services.Payment.API.Grpc.V1;
 using CleanArchitecture.Services.Payment.API.Interfaces;
 using CleanArchitecture.Services.Payment.API.Services;
 using CleanArchitecture.Shared.DataProtection.Redis;
@@ -27,6 +28,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -44,6 +46,7 @@ namespace CleanArchitecture.Services.Payment.API
             IdentityModelEventSource.ShowPII = true;
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddGrpcHealthChecks();
             var healthChecks = builder.Services.AddAllHealthChecks();
             var connectionString = builder.Configuration.GetConnectionString("PaymentConnectionString");
             builder.Services.AddDbContext<PaymentDbContext>(options =>
@@ -85,16 +88,28 @@ namespace CleanArchitecture.Services.Payment.API
             builder.Services.AddAuthorization();
             builder.Services.AddGrpc(options =>
             {
-                options.EnableDetailedErrors = true;
+                if (builder.Environment.IsDevelopment() == true)
+                {
+                    options.EnableDetailedErrors = true;
+                }
                 options.MaxReceiveMessageSize = 2 * 1024 * 1024; // 2 MB
                 options.MaxSendMessageSize = 5 * 1024 * 1024; // 5 MB
+            }).AddJsonTranscoding();
+            builder.Services.AddGrpcSwagger();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1",
+                    new OpenApiInfo { Title = "gRPC transcoding", Version = "v1" });
+                var filePath = Path.Combine(System.AppContext.BaseDirectory, "Server.xml");
+                c.IncludeXmlComments(filePath);
+                c.IncludeGrpcXmlComments(filePath, includeControllerXmlComments: true);
             });
             builder.Services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
-            builder.Services.AddTransient<PaymentService>();
+            builder.Services.AddTransient<PaymentServiceV1>();
             builder.Services.AddTransient<ISubscriberService, SubscriberService>();
             var kafkaConnectionString = builder.Configuration.GetValue<string>("Kafka");
             builder.Services.AddCap(x =>
@@ -193,7 +208,11 @@ namespace CleanArchitecture.Services.Payment.API
                .AddKafka(new Confluent.Kafka.ProducerConfig() { BootstrapServers = kafkaConnectionString }, null, "Kafka", null, new string[] { "kafka", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
                .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
             var app = builder.Build();
-
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Basket API V1");
+            });
             app.UseAllHealthChecks();
             app.UseResponseCompression();
             if (app.Environment.IsDevelopment())
@@ -211,8 +230,8 @@ namespace CleanArchitecture.Services.Payment.API
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapGrpcService<PaymentService>().RequireCors("CorsPolicy").EnableGrpcWeb();
-
+            app.MapGrpcService<PaymentServiceV1>().RequireCors("CorsPolicy").EnableGrpcWeb();
+            app.MapGrpcHealthChecksService().RequireCors("CorsPolicy").EnableGrpcWeb();
             app.MapGet("/", async context =>
             {
                 await context.Response.WriteAsync("Payment MicroService");

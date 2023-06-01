@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CleanArchitecture.Services.Basket.API.ApiModels
+namespace CleanArchitecture.Services.Basket.API.ApiModels.V1
 {
     public class BasketItem
     {

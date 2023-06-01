@@ -1,0 +1,10 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+option csharp_namespace = "CleanArchitecture.Services.Payment.API.Grpc.V1";
+
+package Pament.V1;
+
+service Payment {
+	
+}
+

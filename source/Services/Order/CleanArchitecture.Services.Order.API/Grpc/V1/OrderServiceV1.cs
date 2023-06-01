@@ -11,21 +11,22 @@ using Grpc.Net.ClientFactory;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
+using static CleanArchitecture.Services.Basket.API.Grpc.V1.Basket;
 
-namespace CleanArchitecture.Services.Order.API.Grpc
+namespace CleanArchitecture.Services.Order.API.Grpc.V1
 {
     [Authorize]
-    public class OrderService : Order.OrderBase
+    public class OrderServiceV1 : Order.OrderBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly CleanArchitecture.Services.Basket.API.Grpc.Basket.BasketClient _basketClient;
+        private readonly BasketClient _basketClient;
         private readonly OrderDbContext _orderDbContext;
         private readonly ICapPublisher _capBus;
 
-        public OrderService(IHttpContextAccessor httpContextAccessor, GrpcClientFactory grpcClientFactory, OrderDbContext orderDbContext, ICapPublisher capBus)
+        public OrderServiceV1(IHttpContextAccessor httpContextAccessor, GrpcClientFactory grpcClientFactory, OrderDbContext orderDbContext, ICapPublisher capBus)
         {
             _httpContextAccessor = httpContextAccessor;
-            _basketClient = grpcClientFactory.CreateClient<CleanArchitecture.Services.Basket.API.Grpc.Basket.BasketClient>(nameof(CleanArchitecture.Services.Basket.API.Grpc.Basket.BasketClient));
+            _basketClient = grpcClientFactory.CreateClient<BasketClient>(nameof(BasketClient));
             _orderDbContext = orderDbContext;
             _capBus = capBus;
         }
@@ -35,14 +36,14 @@ namespace CleanArchitecture.Services.Order.API.Grpc
             BoolValue status = new BoolValue();
             var userIdValue = _httpContextAccessor.HttpContext.User?.FindFirst(x => x.Type.Equals("sub"))?.Value;
             if (userIdValue != null && Guid.TryParse(userIdValue, out Guid userId))
-            {               
+            {
                 using (var transaction = _orderDbContext.Database.BeginTransaction(_capBus, autoCommit: false))
                 {
                     var user = _orderDbContext.Users.Where(q => q.Id == userId).SingleOrDefault();
                     if (user == null)
                     {
                         _orderDbContext.Users.Add(new User() { Id = userId });
-                    }                   
+                    }
                     var getBasketItemsResponse = await _basketClient.GetBasketItemsAsync(new Empty());
                     if (getBasketItemsResponse.BasketItems.Count > 0)
                     {
@@ -79,7 +80,7 @@ namespace CleanArchitecture.Services.Order.API.Grpc
                         status.Value = false;
                         return await Task.FromResult(status);
                     }
-                }              
+                }
             }
             status.Value = false;
             return await Task.FromResult(status);

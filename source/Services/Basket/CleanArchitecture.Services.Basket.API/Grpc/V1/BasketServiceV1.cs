@@ -8,21 +8,21 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using CleanArchitecture.Services.Basket.API.ApiModels;
-using CleanArchitecture.Services.Catalog.API.Grpc;
+using CleanArchitecture.Services.Basket.API.ApiModels.V1;
+using CleanArchitecture.Services.Catalog.API.Grpc.V1;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Grpc.Net.ClientFactory;
 
-namespace CleanArchitecture.Services.Basket.API.Grpc
+namespace CleanArchitecture.Services.Basket.API.Grpc.V1
 {
     [Authorize]
-    public class BasketService : Basket.BasketBase
+    public class BasketServiceV1 : Basket.BasketBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IDistributedCache _cache;
         private readonly Product.ProductClient _productClient;
-        public BasketService(IHttpContextAccessor httpContextAccessor, IDistributedCache cache, GrpcClientFactory grpcClientFactory)
+        public BasketServiceV1(IHttpContextAccessor httpContextAccessor, IDistributedCache cache, GrpcClientFactory grpcClientFactory)
         {
             _httpContextAccessor = httpContextAccessor;
             _cache = cache;

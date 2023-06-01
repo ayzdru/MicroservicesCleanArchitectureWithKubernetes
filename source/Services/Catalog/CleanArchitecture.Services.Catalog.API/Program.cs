@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Catalog.API.Data;
-using CleanArchitecture.Services.Catalog.API.Grpc;
+using CleanArchitecture.Services.Catalog.API.Grpc.V1;
 using CleanArchitecture.Services.Catalog.API.Interfaces;
 using CleanArchitecture.Services.Catalog.API.Services;
 using CleanArchitecture.Shared.DataProtection.Redis;
@@ -29,6 +30,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -47,6 +49,7 @@ namespace CleanArchitecture.Services.Catalog.API
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddGrpcHealthChecks();
             var healthChecks = builder.Services.AddAllHealthChecks();
 
             var connectionString = builder.Configuration.GetConnectionString("CatalogConnectionString");
@@ -111,9 +114,21 @@ namespace CleanArchitecture.Services.Catalog.API
             builder.Services.AddAuthorization();
             builder.Services.AddGrpc(options =>
             {
-                options.EnableDetailedErrors = true;
+                if (builder.Environment.IsDevelopment() == true)
+                {
+                    options.EnableDetailedErrors = true;
+                }
                 options.MaxReceiveMessageSize = 2 * 1024 * 1024; // 2 MB
                 options.MaxSendMessageSize = 5 * 1024 * 1024; // 5 MB
+            }).AddJsonTranscoding();
+            builder.Services.AddGrpcSwagger();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1",
+                    new OpenApiInfo { Title = "gRPC transcoding", Version = "v1" });
+                var filePath = Path.Combine(System.AppContext.BaseDirectory, "Server.xml");
+                c.IncludeXmlComments(filePath);
+                c.IncludeGrpcXmlComments(filePath, includeControllerXmlComments: true);
             });
             builder.Services.AddResponseCompression(opts =>
             {
@@ -218,6 +233,11 @@ namespace CleanArchitecture.Services.Catalog.API
               .AddKafka(new Confluent.Kafka.ProducerConfig() { BootstrapServers = kafkaConnectionString }, null, "Kafka", null, new string[] { "kafka", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
               .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
             var app = builder.Build();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Basket API V1");
+            });
             app.UseAllHealthChecks();
             app.UseResponseCompression();
             if (app.Environment.IsDevelopment())
@@ -234,7 +254,8 @@ namespace CleanArchitecture.Services.Catalog.API
 
             app.UseAuthentication();
             app.UseAuthorization();
-            app.MapGrpcService<ProductService>().RequireCors("CorsPolicy").EnableGrpcWeb();
+            app.MapGrpcService<ProductServiceV1>().RequireCors("CorsPolicy").EnableGrpcWeb();
+            app.MapGrpcHealthChecksService().RequireCors("CorsPolicy").EnableGrpcWeb();
             app.MapGet("/", async context =>
             {
                 await context.Response.WriteAsync("Catalog MicroService");

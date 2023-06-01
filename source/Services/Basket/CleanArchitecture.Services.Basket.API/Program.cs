@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -8,8 +9,8 @@ using System.Reflection.PortableExecutable;
 using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
-using CleanArchitecture.Services.Basket.API.Grpc;
-using CleanArchitecture.Services.Catalog.API.Grpc;
+using CleanArchitecture.Services.Basket.API.Grpc.V1;
+using CleanArchitecture.Services.Catalog.API.Grpc.V1;
 using CleanArchitecture.Shared.DataProtection.Redis;
 using CleanArchitecture.Shared.HealthChecks;
 using Grpc.Net.Client;
@@ -27,6 +28,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.OpenApi.Models;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -46,6 +48,7 @@ namespace CleanArchitecture.Services.Basket.API
 
 
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddGrpcHealthChecks();
             var healthChecks = builder.Services.AddAllHealthChecks();
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("sub");
 
@@ -76,9 +79,22 @@ namespace CleanArchitecture.Services.Basket.API
             builder.Services.AddAuthorization();
             builder.Services.AddGrpc(options =>
             {
-                options.EnableDetailedErrors = true;
+                if (builder.Environment.IsDevelopment() == true)
+                {
+                    options.EnableDetailedErrors = true;
+                }
                 options.MaxReceiveMessageSize = 2 * 1024 * 1024; // 2 MB
                 options.MaxSendMessageSize = 5 * 1024 * 1024; // 5 MB
+            })
+                .AddJsonTranscoding();
+            builder.Services.AddGrpcSwagger();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1",
+                    new OpenApiInfo { Title = "gRPC transcoding", Version = "v1" });
+                var filePath = Path.Combine(System.AppContext.BaseDirectory, "Server.xml");
+                c.IncludeXmlComments(filePath);
+                c.IncludeGrpcXmlComments(filePath, includeControllerXmlComments: true);
             });
             builder.Services.AddResponseCompression(opts =>
             {
@@ -197,6 +213,11 @@ namespace CleanArchitecture.Services.Basket.API
             healthChecks.AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
 
             var app = builder.Build();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Basket API V1");
+            });
             app.UseAllHealthChecks();
             app.UseResponseCompression();
             if (app.Environment.IsDevelopment())
@@ -214,7 +235,8 @@ namespace CleanArchitecture.Services.Basket.API
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapGrpcService<BasketService>().RequireCors("CorsPolicy").EnableGrpcWeb();
+            app.MapGrpcService<BasketServiceV1>().RequireCors("CorsPolicy").EnableGrpcWeb();
+            app.MapGrpcHealthChecksService().RequireCors("CorsPolicy").EnableGrpcWeb(); ;
 
             app.MapGet("/", async context =>
             {
