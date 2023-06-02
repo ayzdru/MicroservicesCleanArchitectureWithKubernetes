@@ -12,3 +12,5 @@ Open Telemetry (metrics, logs, and traces)
 Kubernetes
 Docker
 Kafka
+
+https://marketplace.visualstudio.com/items?itemName=AyazDuru.AyazDuruCaptainDocker
