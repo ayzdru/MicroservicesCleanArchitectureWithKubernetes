@@ -9,9 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Protos\basket.proto" />
-  </ItemGroup>
-  <ItemGroup>
 
 	  <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2" />
 	  <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />	  

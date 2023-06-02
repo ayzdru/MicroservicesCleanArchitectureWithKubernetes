@@ -1,5 +1,6 @@
 ﻿using CleanArchitecture.Services.Catalog.API.Data;
 using CleanArchitecture.Services.Catalog.API.Interfaces;
+using CleanArchitecture.Shared.DataProtection.Redis;
 using DotNetCore.CAP;
 using System;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace CleanArchitecture.Services.Catalog.API.Services
         public string Email { get; set; }
     }
     public class SubscriberService : ISubscriberService, ICapSubscribe
-    {
+    {      
         private readonly CatalogDbContext _catalogDbContext;
         public SubscriberService(CatalogDbContext catalogDbContext)
         {

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Order.API.Data;
 using CleanArchitecture.Services.Order.API.Grpc.V1;
@@ -102,9 +103,35 @@ namespace CleanArchitecture.Services.Order.API
             {
                 c.SwaggerDoc("v1",
                     new OpenApiInfo { Title = "gRPC transcoding", Version = "v1" });
-                var filePath = Path.Combine(System.AppContext.BaseDirectory, "Server.xml");
+                                var filePath = Path.Combine(System.AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
                 c.IncludeXmlComments(filePath);
                 c.IncludeGrpcXmlComments(filePath, includeControllerXmlComments: true);
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri(identityUrl + "/connect/authorize"),
+                            TokenUrl = new Uri(identityUrl + "/connect/token"),
+                            Scopes = new Dictionary<string, string>
+                                {
+                                    { "order", "Access read/write operations" },
+                                }
+                        }
+                    }
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
+                            },
+                            new[] { "order" }
+                        }
+                    });
             });
             builder.Services.AddResponseCompression(opts =>
             {
@@ -119,6 +146,7 @@ namespace CleanArchitecture.Services.Order.API
                 x.UseDashboard();
                 x.UseKafka(kafkaConnectionString);
                 x.FailedRetryCount = 5;
+                x.FailedMessageExpiredAfter = int.MaxValue;
             });
 
             builder.Services.AddHttpContextAccessor();
@@ -244,7 +272,11 @@ namespace CleanArchitecture.Services.Order.API
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Basket API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Order API V1");
+                c.OAuthClientId("OrderSwagger");
+                c.OAuthAppName("OrderSwagger");
+                c.OAuthScopeSeparator(" ");
+                c.OAuthUsePkce();
             });
             app.UseAllHealthChecks();
             app.UseResponseCompression();

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Runtime.Intrinsics.Arm;
 using System.Text;
@@ -27,6 +28,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Logs;
@@ -92,9 +94,35 @@ namespace CleanArchitecture.Services.Basket.API
             {
                 c.SwaggerDoc("v1",
                     new OpenApiInfo { Title = "gRPC transcoding", Version = "v1" });
-                var filePath = Path.Combine(System.AppContext.BaseDirectory, "Server.xml");
+                var filePath = Path.Combine(System.AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
                 c.IncludeXmlComments(filePath);
                 c.IncludeGrpcXmlComments(filePath, includeControllerXmlComments: true);
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                         AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri( identityUrl  + "/connect/authorize"),
+                            TokenUrl = new Uri(identityUrl + "/connect/token"),
+                            Scopes = new Dictionary<string, string>
+                                {
+                                    { "basket", "Access read/write operations" },
+                                }
+                        }
+                    }
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
+                            },
+                            new[] { "basket" }
+                        }
+                    });
             });
             builder.Services.AddResponseCompression(opts =>
             {
@@ -217,6 +245,10 @@ namespace CleanArchitecture.Services.Basket.API
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Basket API V1");
+                c.OAuthClientId("BasketSwagger");
+                c.OAuthAppName("BasketSwagger");
+                c.OAuthScopeSeparator(" ");
+                c.OAuthUsePkce();
             });
             app.UseAllHealthChecks();
             app.UseResponseCompression();

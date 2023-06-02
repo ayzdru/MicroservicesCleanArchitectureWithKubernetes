@@ -100,6 +100,7 @@ namespace CleanArchitecture.Services.Identity.API
                 x.UseDashboard();
                 x.UseKafka(kafkaConnectionString);
                 x.FailedRetryCount = 5;
+                x.FailedMessageExpiredAfter = int.MaxValue;
             });
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
             var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
@@ -199,6 +200,7 @@ namespace CleanArchitecture.Services.Identity.API
             }
             else
             {
+                app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
             app.UseHttpsRedirection();

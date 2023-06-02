@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using CleanArchitecture.Web.BlazorWebAssembly.Client.States;
-using CleanArchitecture.Services.Order.API.Grpc;
-using CleanArchitecture.Services.Basket.API.Grpc;
-using CleanArchitecture.Services.Catalog.API.Grpc;
+using CleanArchitecture.Services.Order.API.Grpc.V1;
+using CleanArchitecture.Services.Basket.API.Grpc.V1;
+using CleanArchitecture.Services.Catalog.API.Grpc.V1;
 
 namespace CleanArchitecture.Web.BlazorWebAssembly.Client
 {

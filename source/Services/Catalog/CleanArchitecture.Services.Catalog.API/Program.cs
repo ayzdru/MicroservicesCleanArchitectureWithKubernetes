@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Catalog.API.Data;
 using CleanArchitecture.Services.Catalog.API.Grpc.V1;
@@ -15,6 +16,7 @@ using CleanArchitecture.Shared.HealthChecks;
 using Confluent.Kafka.Extensions.OpenTelemetry;
 using DotNetCore.CAP;
 using DotNetCore.CAP.Messages;
+using Google.Protobuf.WellKnownTypes;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -29,6 +31,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.OpenApi.Models;
 using Npgsql;
@@ -126,9 +129,35 @@ namespace CleanArchitecture.Services.Catalog.API
             {
                 c.SwaggerDoc("v1",
                     new OpenApiInfo { Title = "gRPC transcoding", Version = "v1" });
-                var filePath = Path.Combine(System.AppContext.BaseDirectory, "Server.xml");
+                                var filePath = Path.Combine(System.AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
                 c.IncludeXmlComments(filePath);
                 c.IncludeGrpcXmlComments(filePath, includeControllerXmlComments: true);
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri(identityUrl + "/connect/authorize"),
+                            TokenUrl = new Uri(identityUrl + "/connect/token"),
+                            Scopes = new Dictionary<string, string>
+                                {
+                                    { "catalog", "Access read/write operations" },
+                                }
+                        }
+                    }
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
+                            },
+                            new[] { "catalog" }
+                        }
+                    });
             });
             builder.Services.AddResponseCompression(opts =>
             {
@@ -142,7 +171,8 @@ namespace CleanArchitecture.Services.Catalog.API
                 x.UseEntityFramework<CatalogDbContext>();
                 x.UseDashboard();
                 x.UseKafka(kafkaConnectionString);
-                x.FailedRetryCount = 5;               
+                x.FailedRetryCount = 5;
+                x.FailedMessageExpiredAfter = int.MaxValue;
             });
 
             var serviceName = builder.Configuration.GetValue<string>("ServiceName");
@@ -236,7 +266,11 @@ namespace CleanArchitecture.Services.Catalog.API
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Basket API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Catalog API V1");
+                c.OAuthClientId("CatalogSwagger");
+                c.OAuthAppName("CatalogSwagger");
+                c.OAuthScopeSeparator(" ");
+                c.OAuthUsePkce();
             });
             app.UseAllHealthChecks();
             app.UseResponseCompression();
