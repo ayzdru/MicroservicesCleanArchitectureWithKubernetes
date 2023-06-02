@@ -13,4 +13,4 @@ Kubernetes
 Docker
 Kafka
 
-https://marketplace.visualstudio.com/items?itemName=AyazDuru.AyazDuruCaptainDocker
+[Captain Docker Visual Studio 2022 Extension]([url](https://marketplace.visualstudio.com/items?itemName=AyazDuru.AyazDuruCaptainDocker))
