@@ -77,7 +77,7 @@ namespace CleanArchitecture.Services.Identity.API
 
             builder.Services.AddIdentityServer(options =>
             {
-
+                
             })
                 .AddSigningCredentials()
                 .AddApiAuthorization<IdentityUser, IdentityDbContext>();
@@ -199,8 +199,7 @@ namespace CleanArchitecture.Services.Identity.API
                 app.UseDeveloperExceptionPage();
             }
             else
-            {
-                app.UseExceptionHandler("/Error");
+            {             
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
