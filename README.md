@@ -11,3 +11,4 @@ Healtchecks
 Open Telemetry (metrics, logs, and traces)
 Kubernetes
 Docker
+Kafka
