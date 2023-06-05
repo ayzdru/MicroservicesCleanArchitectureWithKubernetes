@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.5" />
-	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.5" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.5" PrivateAssets="all" />
 	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.5" />
 	  <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
 	  <PackageReference Include="System.Net.Http.Json" Version="7.0.1" />
@@ -18,11 +18,6 @@
 	  <PackageReference Include="Grpc.Net.Client" Version="2.53.0" />
 	  <PackageReference Include="Grpc.Net.Client.Web" Version="2.53.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<Protobuf Include="Protos\V1\order.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\V1\basket.proto" GrpcServices="Client" />
@@ -30,5 +25,19 @@
 		<Protobuf Include="google\api\http.proto" GrpcServices="Client" />
 		<Protobuf Include="google\api\annotations.proto" GrpcServices="Client" />
 	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="google\api\" />
+	</ItemGroup>
 
+	<ItemGroup>
+		<None Update="google\api\*.proto">
+			<Pack>true</Pack>
+			<PackageCopyToOutput>true</PackageCopyToOutput>
+			<PackageFlatten>true</PackageFlatten>
+			<PackagePath>content</PackagePath>
+		</None>
+	</ItemGroup>
+  <ItemGroup>	 
+    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+  </ItemGroup>
 </Project>

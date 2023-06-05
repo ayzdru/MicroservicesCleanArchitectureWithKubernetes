@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Basket.API.Grpc.V1;
 
-namespace CleanArchitecture.Web.BlazorWebAssembly.States
+namespace CleanArchitecture.Web.BlazorWebAssembly.Client.States
 {
 
     public class BasketState
