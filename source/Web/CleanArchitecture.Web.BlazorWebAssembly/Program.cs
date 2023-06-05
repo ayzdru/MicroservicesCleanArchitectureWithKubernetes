@@ -1,15 +1,14 @@
-using CleanArchitecture.Web.BlazorWebAssembly.Client;
 using Grpc.Net.Client.Web;
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using CleanArchitecture.Web.BlazorWebAssembly.Client.States;
+using CleanArchitecture.Web.BlazorWebAssembly.States;
 using CleanArchitecture.Services.Order.API.Grpc.V1;
 using CleanArchitecture.Services.Basket.API.Grpc.V1;
 using CleanArchitecture.Services.Catalog.API.Grpc.V1;
 
-namespace CleanArchitecture.Web.BlazorWebAssembly.Client
+namespace CleanArchitecture.Web.BlazorWebAssembly
 {
     public class Program
     {

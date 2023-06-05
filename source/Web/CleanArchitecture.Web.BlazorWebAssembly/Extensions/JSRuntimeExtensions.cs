@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
-namespace CleanArchitecture.Web.BlazorWebAssembly.Client.Extensions
+namespace CleanArchitecture.Web.BlazorWebAssembly.Extensions
 {
     public static class JSRuntimeExtensions
     {

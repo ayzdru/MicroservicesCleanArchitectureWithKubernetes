@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
-namespace CleanArchitecture.Web.BlazorWebAssembly.Client
+namespace CleanArchitecture.Web.BlazorWebAssembly
 {
     public class StreamingHttpHandler : DelegatingHandler
     {

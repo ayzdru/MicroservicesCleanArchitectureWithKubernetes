@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CleanArchitecture.Services.Basket.API.ApiModels.V1
+namespace CleanArchitecture.Services.Basket.API.DataTransferObjects.V1
 {
-    public class BasketItem
+    public class BasketItemDTO
     {
         public string ProductId { get; set; }
         public int Quantity { get; set; }
