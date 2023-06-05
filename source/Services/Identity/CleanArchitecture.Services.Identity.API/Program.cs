@@ -79,7 +79,8 @@ namespace CleanArchitecture.Services.Identity.API
             {
                 
             })
-                .AddSigningCredentials()
+                //.AddSigningCredentials() Production Environment
+                .AddDeveloperSigningCredential()
                 .AddApiAuthorization<IdentityUser, IdentityDbContext>();
 
             builder.Services.AddAuthentication()
