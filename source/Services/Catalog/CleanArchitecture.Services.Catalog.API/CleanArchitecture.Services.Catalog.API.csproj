@@ -36,7 +36,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
 	  <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.5.0-alpha.2" />
 	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.5.0-alpha.2" />
 	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.Logs" Version="1.5.0-alpha.2" />
@@ -61,12 +60,9 @@
     <Protobuf Include="Protos\V1\product.proto" GrpcServices="Server" />	 
   </ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Data\Migrations\" />
-	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore.csproj" />
-	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />
+	 
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj" />
+	  <ProjectReference Include="..\CleanArchitecture.Services.Catalog.Infrastructure\CleanArchitecture.Services.Catalog.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>

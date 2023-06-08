@@ -3,36 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Catalog.API.Data;
+using CleanArchitecture.Services.Catalog.Application.Queries;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
+using MediatR;
 
 namespace CleanArchitecture.Services.Catalog.API.Grpc.V1
 {   
     public class ProductServiceV1 : Product.ProductBase
     {
-        private readonly CatalogDbContext _catalogDbContext;
-        public ProductServiceV1(CatalogDbContext catalogDbContext)
+        private readonly IMediator _mediator;
+
+        public ProductServiceV1(IMediator mediator)
         {
-            _catalogDbContext = catalogDbContext;
+            _mediator = mediator;
         }
 
-        public override Task<ProductsResponse> GetProducts(Empty request, ServerCallContext context)
+        public override async Task<ProductsResponse> GetProducts(Empty request, ServerCallContext context)
         {
             var productsResponse = new ProductsResponse();
-            var products = _catalogDbContext.Products.Select(q => new ProductResponse() { Id=q.Id.ToString(), Name = q.Name, Description =q.Description, Price = q.Price }).ToList();
-            productsResponse.Products.AddRange(products);
-            return Task.FromResult(productsResponse); 
+            var products = await _mediator.Send(new GetProductsQuery());
+            productsResponse.Products.AddRange(products.Select(q=> new ProductResponse() { Id = q.Id.ToString(), Name = q.Name, Description = q.Description, Price = q.Price  }));
+            return await Task.FromResult(productsResponse); 
         }
 
-        public override Task<ProductResponse> GetProductById(GetProductByIdRequest request, ServerCallContext context)
+        public override async Task<ProductResponse> GetProductById(GetProductByIdRequest request, ServerCallContext context)
         {
-            return Task.FromResult(_catalogDbContext.Products
-                .Where(q => q.Id == Guid.Parse(request.ProductId))
-                .Select(q => new ProductResponse()
-                    {Id = q.Id.ToString(), Price = q.Price, Description = q.Description, Name = q.Name})
-                .SingleOrDefault());
+            var product = await _mediator.Send(new GetProductByIdQuery(Guid.Parse(request.ProductId)));
+            return await Task.FromResult( new ProductResponse() { Id = product.Id.ToString(), Name = product.Name, Description = product.Description, Price = product.Price });
         }
     }
 }
