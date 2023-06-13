@@ -200,8 +200,7 @@ namespace CleanArchitecture.Services.Basket.API
     .WithMetrics(m =>
     {
         m
-            .AddMeter(serviceName)
-            .SetExemplarFilter(new TraceBasedExemplarFilter())
+            .AddMeter(serviceName)             
             .AddRuntimeInstrumentation()
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation();

@@ -227,7 +227,6 @@ namespace CleanArchitecture.Services.Order.API
     {
         m
             .AddMeter(serviceName)
-            .SetExemplarFilter(new TraceBasedExemplarFilter())
             .AddRuntimeInstrumentation()
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation();

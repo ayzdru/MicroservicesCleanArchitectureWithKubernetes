@@ -192,7 +192,6 @@ t.AddOtlpExporter(otlpOptions =>
 {
 m
 .AddMeter(serviceName)
-.SetExemplarFilter(new TraceBasedExemplarFilter())
 .AddRuntimeInstrumentation()
 .AddHttpClientInstrumentation()
 .AddAspNetCoreInstrumentation();

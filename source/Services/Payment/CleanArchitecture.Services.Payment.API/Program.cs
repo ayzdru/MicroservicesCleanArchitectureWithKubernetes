@@ -194,7 +194,6 @@ namespace CleanArchitecture.Services.Payment.API
     {
         m
             .AddMeter(serviceName)
-            .SetExemplarFilter(new TraceBasedExemplarFilter())
             .AddRuntimeInstrumentation()
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation();

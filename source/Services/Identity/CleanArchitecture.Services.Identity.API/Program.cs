@@ -147,7 +147,6 @@ namespace CleanArchitecture.Services.Identity.API
     {
         m
             .AddMeter(serviceName)
-            .SetExemplarFilter(new TraceBasedExemplarFilter())
             .AddRuntimeInstrumentation()
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation();
