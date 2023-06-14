@@ -12,6 +12,7 @@ Open Telemetry (metrics, logs, and traces)
 Kubernetes
 Docker
 Kafka
+CQRS
 
 # Captain Docker Visual Studio 2022 Extension
 https://marketplace.visualstudio.com/items?itemName=AyazDuru.AyazDuruCaptainDocker
