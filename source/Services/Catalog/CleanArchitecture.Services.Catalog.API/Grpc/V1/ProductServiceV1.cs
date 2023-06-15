@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CleanArchitecture.Services.Catalog.API.Data;
 using CleanArchitecture.Services.Catalog.Application.Queries;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;

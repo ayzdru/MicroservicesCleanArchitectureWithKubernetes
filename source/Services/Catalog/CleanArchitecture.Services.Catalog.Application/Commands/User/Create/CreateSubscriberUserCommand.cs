@@ -22,17 +22,17 @@ namespace CleanArchitecture.Services.Catalog.Application.Commands
         }
         public class CreateSubscriberUserCommandHandler : IRequestHandler<CreateSubscriberUserCommand, int>
         {
-            private readonly ICatalogDbContext _applicationDbContext;
+            private readonly ICatalogDbContext _catalogDbContext;
             private readonly IMediator _mediator;
-            public CreateSubscriberUserCommandHandler(ICatalogDbContext applicationDbContext, IMediator mediator)
+            public CreateSubscriberUserCommandHandler(ICatalogDbContext catalogDbContext, IMediator mediator)
             {
-                _applicationDbContext = applicationDbContext;
+                _catalogDbContext = catalogDbContext;
                 _mediator = mediator;
             }
             public async Task<int> Handle(CreateSubscriberUserCommand request, CancellationToken cancellationToken)
             {
-                _applicationDbContext.Users.Add(new User(request.SubscriberUser.Id, request.SubscriberUser.UserName, request.SubscriberUser.Email));                    
-                var affected = await _applicationDbContext.SaveChangesAsync(cancellationToken);
+                _catalogDbContext.Users.Add(new User(request.SubscriberUser.Id, request.SubscriberUser.UserName, request.SubscriberUser.Email));                    
+                var affected = await _catalogDbContext.SaveChangesAsync(cancellationToken);
                 await _mediator.Publish(new CreateSubscriberUserNotification { SubscriberUser = request.SubscriberUser }, cancellationToken);
                 return affected;
             }

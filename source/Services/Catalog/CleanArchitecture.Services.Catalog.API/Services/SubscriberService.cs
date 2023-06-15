@@ -1,5 +1,4 @@
-﻿using CleanArchitecture.Services.Catalog.API.Data;
-using CleanArchitecture.Services.Catalog.Application.Commands;
+﻿using CleanArchitecture.Services.Catalog.Application.Commands;
 using CleanArchitecture.Services.Catalog.Core.Interfaces;
 using CleanArchitecture.Services.Catalog.Core.Models;
 using CleanArchitecture.Shared.DataProtection.Redis;

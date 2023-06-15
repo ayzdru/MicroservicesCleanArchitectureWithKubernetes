@@ -14,13 +14,15 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace CleanArchitecture.Services.Catalog.API.Data
+namespace CleanArchitecture.Services.Catalog.Infrastructure.Data
 {
     public class CatalogDbContext : DbContext, ICatalogDbContext
     {
         private readonly IEncryptionProvider _encryptionProvider;
         private readonly IMediator _mediator;
         private readonly EntitySaveChangesInterceptor _entitySaveChangesInterceptor;
+        public DbSet<Product> Products { get; set; }
+        public DbSet<User> Users { get; set; }
         public CatalogDbContext(DbContextOptions<CatalogDbContext> options, IMediator mediator, EntitySaveChangesInterceptor entitySaveChangesInterceptor)
               : base(options)
         {
@@ -55,8 +57,6 @@ namespace CleanArchitecture.Services.Catalog.API.Data
             await _mediator.DispatchNotifications(this);
 
             return await base.SaveChangesAsync(cancellationToken);
-        }
-        public DbSet<Product> Products { get; set; }
-        public DbSet<User> Users { get; set; }
+        }        
     }
 }

@@ -1,4 +1,4 @@
-﻿using CleanArchitecture.Services.Catalog.API.Data;
+﻿using CleanArchitecture.Services.Catalog.Infrastructure.Data;
 using CleanArchitecture.Services.Catalog.Application;
 using CleanArchitecture.Services.Catalog.Application.Behaviours;
 using CleanArchitecture.Services.Catalog.Application.Interfaces;
@@ -35,7 +35,7 @@ namespace CleanArchitecture.Services.Catalog.Infrastructure.IoC
             services.AddScoped<ICatalogDbContext>(provider => provider.GetService<CatalogDbContext>());
             if (webHostEnvironment.IsDevelopment())
             {
-                services.AddScoped<CatalogDbDbContextInitialiser>();
+                services.AddScoped<CatalogDbContextInitialiser>();
             }
             services.AddApplication();
             return services;

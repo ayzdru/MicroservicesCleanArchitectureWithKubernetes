@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using CleanArchitecture.Services.Catalog.API.Data;
 using CleanArchitecture.Services.Catalog.API.Grpc.V1;
 using CleanArchitecture.Services.Catalog.Core.Interfaces;
 using CleanArchitecture.Services.Catalog.API.Services;
@@ -49,12 +48,12 @@ IdentityModelEventSource.ShowPII = true;
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddGrpcHealthChecks();
 var healthChecks = builder.Services.AddAllHealthChecks();
 
 var connectionString = builder.Configuration.GetConnectionString("CatalogConnectionString");
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment, connectionString);
 
 
@@ -234,7 +233,7 @@ healthChecks
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
-    var initialiser = scope.ServiceProvider.GetRequiredService<CatalogDbDbContextInitialiser>();
+    var initialiser = scope.ServiceProvider.GetRequiredService<CatalogDbContextInitialiser>();
     await initialiser.InitialiseAsync();
     await initialiser.SeedAsync();
 }

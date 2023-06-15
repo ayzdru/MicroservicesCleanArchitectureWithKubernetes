@@ -1,60 +1,43 @@
-﻿using CleanArchitecture.Services.Payment.API.Data;
-using CleanArchitecture.Services.Payment.API.Interfaces;
+﻿using CleanArchitecture.Services.Payment.Application.Commands;
+using CleanArchitecture.Services.Payment.Core.Interfaces;
+using CleanArchitecture.Services.Payment.Core.Models;
+using CleanArchitecture.Shared.DataProtection.Redis;
 using DotNetCore.CAP;
+using MediatR;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CleanArchitecture.Services.Payment.API.Services
 {
-
-    public class CapUserEntity
-    {
-        public string Id { get; set; }
-        public string UserName { get; set; }
-        public string Email { get; set; }
-    }
     public class SubscriberService : ISubscriberService, ICapSubscribe
     {
-        private readonly PaymentDbContext _paymentDbContext;
-        public SubscriberService(PaymentDbContext paymentDbContext)
+        private readonly IMediator _mediator;
+
+        public SubscriberService(IMediator mediator)
         {
-            _paymentDbContext = paymentDbContext;
+            _mediator = mediator;
         }
-        [CapSubscribe("UserAdded")]
-        public void UserAdded(CapUserEntity capUserEntity)
+        [CapSubscribe("OrderAdded")]
+        public async Task OrderAdded(SubscriberOrderModel subscriberOrderModel)
         {
-            _paymentDbContext.Users.Add(new Entities.User { Id = Guid.Parse(capUserEntity.Id), UserName = capUserEntity.UserName, Email = capUserEntity.Email });
-            _paymentDbContext.SaveChanges();
+            await _mediator.Send(new CreateSubscriberOrderCommand(subscriberOrderModel));
+        }
+
+        [CapSubscribe("UserAdded")]
+        public async Task UserAdded(SubscriberUserModel subscriberUserModel)
+        {
+            await _mediator.Send(new CreateSubscriberUserCommand(subscriberUserModel));
         }
         [CapSubscribe("UserDeleted")]
-        public void UserDeleted(CapUserEntity capUserEntity)
+        public async Task UserDeleted(SubscriberUserModel subscriberUserModel)
         {
-            var user = _paymentDbContext.Users.Where(q => q.Id == Guid.Parse(capUserEntity.Id)).SingleOrDefault();
-            if (user != null)
-            {
-                _paymentDbContext.Users.Remove(user);
-                _paymentDbContext.SaveChanges();
-            }
-            else
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            await _mediator.Send(new DeleteSubscriberUserCommand(subscriberUserModel.Id));
         }
         [CapSubscribe("UserUpdated")]
-        public void UserUpdated(CapUserEntity capUserEntity)
+        public async Task UserUpdated(SubscriberUserModel subscriberUserModel)
         {
-            var user = _paymentDbContext.Users.Where(q => q.Id == Guid.Parse(capUserEntity.Id)).SingleOrDefault();
-            if (user != null)
-            {
-                user.UserName = capUserEntity.UserName;
-                user.Email = capUserEntity.Email;
-                _paymentDbContext.Users.Update(user);
-                _paymentDbContext.SaveChanges();
-            }
-            else
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            await _mediator.Send(new UpdateSubscriberUserCommand(subscriberUserModel));
         }
     }
 }

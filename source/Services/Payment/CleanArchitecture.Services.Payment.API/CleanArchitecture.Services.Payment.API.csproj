@@ -21,7 +21,6 @@
 		<PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />
 		<PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.53.0" />
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.7" />
-
 		<PackageReference Include="Google.Protobuf" Version="3.23.2" />
 		<PackageReference Include="Grpc.AspNetCore.Web" Version="2.53.0" />
 		<PackageReference Include="Grpc.Net.Client" Version="2.53.0" />
@@ -32,12 +31,6 @@
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.7" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.31.0" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.53.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.7" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.7">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 		<PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.5.0" />
 		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.5.0" />
 		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.Logs" Version="1.5.0-alpha.2" />
@@ -56,11 +49,9 @@
 	  <Protobuf Include="Protos\V1\payment.proto" GrpcServices="Server" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Data\Migrations\" />
-	</ItemGroup>
-	<ItemGroup>
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore.csproj" />
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj" />
+	  <ProjectReference Include="..\CleanArchitecture.Services.Payment.Infrastructure\CleanArchitecture.Services.Payment.Infrastructure.csproj" />
 	</ItemGroup>
 </Project>

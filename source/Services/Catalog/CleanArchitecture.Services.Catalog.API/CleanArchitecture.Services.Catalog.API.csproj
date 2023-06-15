@@ -1,68 +1,62 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-  </PropertyGroup>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="ApiModels\**" />
-    <Content Remove="ApiModels\**" />
-    <EmbeddedResource Remove="ApiModels\**" />
-    <None Remove="ApiModels\**" />
-  </ItemGroup>
-  
-  <ItemGroup>
-	  <PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.3.7" />
-	  <PackageReference Include="Confluent.Kafka.Extensions.OpenTelemetry" Version="0.2.0" />
-	  <PackageReference Include="DotNetCore.CAP" Version="7.1.3" />
-	  <PackageReference Include="DotNetCore.CAP.Dashboard" Version="7.1.3" />
-	  <PackageReference Include="DotNetCore.CAP.OpenTelemetry" Version="7.1.3" />
-	  <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="7.1.3" />
-	  <PackageReference Include="DotNetCore.CAP.Kafka" Version="7.1.3" />
-    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="6.0.2" />
-	  <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />
-	  <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2" />
-    <PackageReference Include="AspNetCore.HealthChecks.Kafka" Version="6.0.3" />
-    <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.53.0" />
-    <PackageReference Include="Grpc.AspNetCore.Web" Version="2.53.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.7" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.31.0" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.53.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.7">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-	  <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.5.0" />
-	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.5.0" />
-	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.Logs" Version="1.5.0-alpha.2" />
-	  <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.5.0" />
-	  <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9.14" />
-	  <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.14" />
-	  <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.5.0" />
-	  <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.0.0-beta.6" />
-	  <PackageReference Include="OpenTelemetry.Instrumentation.GrpcNetClient" Version="1.0.0-rc9.14" />
-	  <PackageReference Include="OpenTelemetry.Contrib.Instrumentation.GrpcCore" Version="1.0.0-beta3" />
-	  <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.0.0-rc9.8" />
-	  <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.0-preview.4" />	 
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="ApiModels\**" />
+		<Content Remove="ApiModels\**" />
+		<EmbeddedResource Remove="ApiModels\**" />
+		<None Remove="ApiModels\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.3.7" />
+		<PackageReference Include="Confluent.Kafka.Extensions.OpenTelemetry" Version="0.2.0" />
+		<PackageReference Include="DotNetCore.CAP" Version="7.1.3" />
+		<PackageReference Include="DotNetCore.CAP.Dashboard" Version="7.1.3" />
+		<PackageReference Include="DotNetCore.CAP.OpenTelemetry" Version="7.1.3" />
+		<PackageReference Include="DotNetCore.CAP.PostgreSql" Version="7.1.3" />
+		<PackageReference Include="DotNetCore.CAP.Kafka" Version="7.1.3" />
+		<PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="6.0.2" />
+		<PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />
+		<PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2" />
+		<PackageReference Include="AspNetCore.HealthChecks.Kafka" Version="6.0.3" />
+		<PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.53.0" />
+		<PackageReference Include="Grpc.AspNetCore.Web" Version="2.53.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.7" />
+		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.7" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.31.0" />
+		<PackageReference Include="Grpc.AspNetCore" Version="2.53.0" />		
+		<PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.5.0" />
+		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.5.0" />
+		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.Logs" Version="1.5.0-alpha.2" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.5.0" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9.14" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.14" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.5.0" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.0.0-beta.6" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.GrpcNetClient" Version="1.0.0-rc9.14" />
+		<PackageReference Include="OpenTelemetry.Contrib.Instrumentation.GrpcCore" Version="1.0.0-beta3" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.0.0-rc9.8" />
+		<PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.0-preview.4" />
+	</ItemGroup>
 	<ItemGroup>
 		<Protos Include="Protos\V1\*.*" />
 	</ItemGroup>
-	<Target Name="CopyFiles" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">	
+	<Target Name="CopyFiles" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
 		<Copy SourceFiles="@(Protos)" DestinationFolder="..\..\..\Services\Basket\CleanArchitecture.Services.Basket.API\Protos\V1" />
 		<Copy SourceFiles="@(Protos)" DestinationFolder="..\..\..\Web\CleanArchitecture.Web.BlazorWebAssembly\Client\Protos\V1" />
 	</Target>
 	<ItemGroup>
-    <Protobuf Include="Protos\V1\product.proto" GrpcServices="Server" />	 
-  </ItemGroup>
+		<Protobuf Include="Protos\V1\product.proto" GrpcServices="Server" />
+	</ItemGroup>
 	<ItemGroup>
-	 
-	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj" />
-	  <ProjectReference Include="..\CleanArchitecture.Services.Catalog.Infrastructure\CleanArchitecture.Services.Catalog.Infrastructure.csproj" />
+		<ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj" />
+		<ProjectReference Include="..\CleanArchitecture.Services.Catalog.Infrastructure\CleanArchitecture.Services.Catalog.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>
