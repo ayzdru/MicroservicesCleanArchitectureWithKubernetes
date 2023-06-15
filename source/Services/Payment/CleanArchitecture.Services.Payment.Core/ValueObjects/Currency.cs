@@ -25,6 +25,11 @@ namespace CleanArchitecture.Services.Payment.Core.ValueObjects
 
         public override string ToString() => Symbol;
 
-        public static implicit operator string(Currency currency) => currency.ToString();
+        public static implicit operator string(Currency currency) => currency.ToString(); 
+        protected override IEnumerable<object> GetEqualityComponents()
+        {
+            yield return Name;
+            yield return Symbol;
+        }
     }
 }

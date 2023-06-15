@@ -75,6 +75,7 @@
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore.csproj" />
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj" />
+	  <ProjectReference Include="..\CleanArchitecture.Services.Order.Infrastructure\CleanArchitecture.Services.Order.Infrastructure.csproj" />
 	</ItemGroup>
 	<Target Name="CopyFiles" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
 		<Copy SourceFiles="@(Protos)" DestinationFolder="..\..\..\Web\CleanArchitecture.Web.BlazorWebAssembly\Client\Protos\V1" />

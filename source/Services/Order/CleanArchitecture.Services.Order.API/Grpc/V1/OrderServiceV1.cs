@@ -67,7 +67,7 @@ namespace CleanArchitecture.Services.Order.API.Grpc.V1
                                 return await Task.FromResult(status);
                             }
                         }
-                        await _capBus.PublishAsync("AddPayment", newOrder.Entity.Id);
+                        await _capBus.PublishAsync("OrderAdded", newOrder.Entity.Id);
                         await _orderDbContext.SaveChangesAsync();
                         await transaction.CommitAsync();
                         await _basketClient.ClearBasketAsync(new Empty());

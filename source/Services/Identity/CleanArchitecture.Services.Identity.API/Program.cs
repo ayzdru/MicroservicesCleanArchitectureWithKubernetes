@@ -73,6 +73,7 @@ namespace CleanArchitecture.Services.Identity.API
 
 
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddRoleManager<IdentityRole>()
                 .AddEntityFrameworkStores<IdentityDbContext>();
 
             builder.Services.AddIdentityServer(options =>

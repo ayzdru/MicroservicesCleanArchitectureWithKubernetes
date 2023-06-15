@@ -59,5 +59,10 @@ namespace CleanArchitecture.Services.Payment.Core.ValueObjects
         {
             if (obj1.Currency != obj2.Currency) throw new CurrencyIsNotValidException();
         }
+
+        protected override IEnumerable<object> GetEqualityComponents()
+        {
+            yield return Amount;
+        }
     }
 }
