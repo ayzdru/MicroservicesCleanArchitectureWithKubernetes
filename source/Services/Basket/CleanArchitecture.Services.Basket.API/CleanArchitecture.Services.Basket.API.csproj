@@ -47,6 +47,7 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj" />
+	  <ProjectReference Include="..\CleanArchitecture.Services.Basket.Infrastructure\CleanArchitecture.Services.Basket.Infrastructure.csproj" />
 	</ItemGroup>
 	<Target Name="CopyFiles" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
 		<Copy SourceFiles="@(Protos)" DestinationFolder="..\..\..\Services\Order\CleanArchitecture.Services.Order.API\Protos\V1" />

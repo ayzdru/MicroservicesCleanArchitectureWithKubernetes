@@ -7,16 +7,14 @@ namespace CleanArchitecture.Services.Catalog.Core.Entities
 {
     public class User : BaseEntity
     {
-        
-        public User(Guid id,string userName, string email)
+        public string UserName { get; private set; }
+        public string Email { get; private set; }
+        public User(Guid id, string userName, string email)
         {
             Id = id;
             UserName = userName;
             Email = email;
         }
-
-        public string UserName { get; protected set; }
-        public string Email { get; protected set; }
 
     }
 }

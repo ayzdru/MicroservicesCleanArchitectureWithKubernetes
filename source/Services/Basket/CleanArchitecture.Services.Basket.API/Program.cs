@@ -11,6 +11,7 @@ using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
 using CleanArchitecture.Services.Basket.API.Grpc.V1;
+using CleanArchitecture.Services.Basket.Core.Interfaces;
 using CleanArchitecture.Services.Catalog.API.Grpc.V1;
 using CleanArchitecture.Shared.DataProtection.Redis;
 using CleanArchitecture.Shared.HealthChecks;

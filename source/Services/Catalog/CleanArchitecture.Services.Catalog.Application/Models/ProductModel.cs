@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace CleanArchitecture.Services.Catalog.Application.Models
 {
-    public class ProductModel
+    public record ProductModel
     {
-        public Guid Id { get; private set; }
-        public string Name { get; private set; }
-        public string Description { get; private set; }
-        public double Price { get; private set; }
+        public Guid Id { get; init; }
+        public string Name { get; init; }
+        public string Description { get; init; }
+        public double Price { get; init; }
         public ProductModel(Guid id, string name, string description, double price)
         {
             Id = id;

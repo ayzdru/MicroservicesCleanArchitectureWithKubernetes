@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using CleanArchitecture.Services.Basket.Core.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -6,10 +7,6 @@ using System.Threading.Tasks;
 
 namespace CleanArchitecture.Services.Basket.API
 {
-    public interface ITokenProvider
-    {
-        Task<string> GetTokenAsync();
-    }
 
     public class AppTokenProvider : ITokenProvider
     {

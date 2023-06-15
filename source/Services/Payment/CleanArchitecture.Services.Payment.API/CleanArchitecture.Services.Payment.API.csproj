@@ -5,8 +5,7 @@
     <UserSecretsId>dc7ab068-6c2d-435d-939d-e624646801e2</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..</DockerfileContext>
-	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
-
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.3.7" />

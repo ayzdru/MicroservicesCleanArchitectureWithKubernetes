@@ -11,7 +11,6 @@ using CleanArchitecture.Services.Catalog.API.Data;
 using CleanArchitecture.Services.Catalog.API.Grpc.V1;
 using CleanArchitecture.Services.Catalog.Core.Interfaces;
 using CleanArchitecture.Services.Catalog.API.Services;
-using CleanArchitecture.Services.Catalog.Core.Interfaces;
 using CleanArchitecture.Services.Catalog.Infrastructure.Data;
 using CleanArchitecture.Shared.DataProtection.Redis;
 using CleanArchitecture.Shared.HealthChecks;

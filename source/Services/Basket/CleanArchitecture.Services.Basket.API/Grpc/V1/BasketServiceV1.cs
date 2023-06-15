@@ -8,11 +8,11 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using CleanArchitecture.Services.Basket.API.DataTransferObjects.V1;
 using CleanArchitecture.Services.Catalog.API.Grpc.V1;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Grpc.Net.ClientFactory;
+using CleanArchitecture.Services.Basket.Application.Models;
 
 namespace CleanArchitecture.Services.Basket.API.Grpc.V1
 {
@@ -36,11 +36,11 @@ namespace CleanArchitecture.Services.Basket.API.Grpc.V1
             var basketResponse = new BasketsResponse();
             if (userId != null)
             {
-                List<BasketItemDTO> basketItems = null;                
+                List<BasketItemModel> basketItems = null;                
                 var basketItemsJson = await _cache.GetStringAsync(userId);
                 if (!string.IsNullOrEmpty(basketItemsJson))
                 {
-                    basketItems = JsonSerializer.Deserialize<List<BasketItemDTO>>(basketItemsJson);
+                    basketItems = JsonSerializer.Deserialize<List<BasketItemModel>>(basketItemsJson);
                     foreach (var basketItem in basketItems)
                     {
                       var product =  await _productClient.GetProductByIdAsync(new GetProductByIdRequest()
@@ -61,15 +61,15 @@ namespace CleanArchitecture.Services.Basket.API.Grpc.V1
             var userId = _httpContextAccessor.HttpContext.User?.FindFirst(x => x.Type.Equals("sub"))?.Value;
             if (userId != null)
             {
-                List<BasketItemDTO> basketItems;
+                List<BasketItemModel> basketItems;
                 var basketItemsJson =  await _cache.GetStringAsync(userId);
                 if (!string.IsNullOrEmpty(basketItemsJson))
                 {
-                    basketItems = JsonSerializer.Deserialize<List<BasketItemDTO>>(basketItemsJson);
+                    basketItems = JsonSerializer.Deserialize<List<BasketItemModel>>(basketItemsJson);
                 }
                 else
                 {
-                    basketItems = new List<BasketItemDTO>();
+                    basketItems = new List<BasketItemModel>();
                 }
 
                 var state = false;
@@ -77,11 +77,11 @@ namespace CleanArchitecture.Services.Basket.API.Grpc.V1
                 if (basketItem == null)
                 {
                     state = true;
-                    basketItems.Add(new BasketItemDTO() { ProductId = request.ProductId, Quantity = 1 });
+                    basketItems.Add(new BasketItemModel(request.ProductId, 1 ));
                 }
                 else
                 {
-                    basketItem.Quantity++;
+                    basketItem = basketItem with { Quantity = basketItem.Quantity + 1 };
                 }
                 var basketItemsSeriliazeJson = JsonSerializer.Serialize(basketItems);
                 await _cache.SetStringAsync(userId, basketItemsSeriliazeJson, options);
@@ -98,14 +98,14 @@ namespace CleanArchitecture.Services.Basket.API.Grpc.V1
         public override async Task<Int32Value> GetBasketItemsCount(Empty request, ServerCallContext context)
         {
             Int32Value count = new Int32Value();
-            List<BasketItemDTO> basketItems = null;
+            List<BasketItemModel> basketItems = null;
             var userId = _httpContextAccessor.HttpContext.User?.FindFirst(x => x.Type.Equals("sub"))?.Value;
             if (userId != null)
             {
                 var basketItemsJson = await _cache.GetStringAsync(userId);
                 if (!string.IsNullOrEmpty(basketItemsJson))
                 {
-                    basketItems = JsonSerializer.Deserialize<List<BasketItemDTO>>(basketItemsJson);
+                    basketItems = JsonSerializer.Deserialize<List<BasketItemModel>>(basketItemsJson);
                     count.Value = basketItems.Count();
                 }
             }
@@ -120,11 +120,11 @@ namespace CleanArchitecture.Services.Basket.API.Grpc.V1
             var userId = _httpContextAccessor.HttpContext.User?.FindFirst(x => x.Type.Equals("sub"))?.Value;
             if (userId != null)
             {
-                List<BasketItemDTO> basketItems;
+                List<BasketItemModel> basketItems;
                 var basketItemsJson = await _cache.GetStringAsync(userId);
                 if (!string.IsNullOrEmpty(basketItemsJson))
                 {
-                    basketItems = JsonSerializer.Deserialize<List<BasketItemDTO>>(basketItemsJson);
+                    basketItems = JsonSerializer.Deserialize<List<BasketItemModel>>(basketItemsJson);
                    var basketItem = basketItems.Where(b => b.ProductId == request.ProductId).SingleOrDefault();
                    if (basketItem != null)
                    {
@@ -166,15 +166,15 @@ namespace CleanArchitecture.Services.Basket.API.Grpc.V1
             var userId = _httpContextAccessor.HttpContext.User?.FindFirst(x => x.Type.Equals("sub"))?.Value;
             if (userId != null)
             {
-                List<BasketItemDTO> basketItems;
+                List<BasketItemModel> basketItems;
                 var basketItemsJson = await _cache.GetStringAsync(userId);
                 if (!string.IsNullOrEmpty(basketItemsJson))
                 {
-                    basketItems = JsonSerializer.Deserialize<List<BasketItemDTO>>(basketItemsJson);
+                    basketItems = JsonSerializer.Deserialize<List<BasketItemModel>>(basketItemsJson);
                     var basketItem = basketItems.Where(b => b.ProductId == request.ProductId).SingleOrDefault();
                     if (basketItem != null)
                     {
-                        basketItem.Quantity = request.Quantity;
+                        basketItem = basketItem with {  Quantity = request.Quantity};
                          var basketItemsSeriliazeJson = JsonSerializer.Serialize(basketItems);
                         await _cache.SetStringAsync(userId, basketItemsSeriliazeJson, options);
                         status.Value = true;
