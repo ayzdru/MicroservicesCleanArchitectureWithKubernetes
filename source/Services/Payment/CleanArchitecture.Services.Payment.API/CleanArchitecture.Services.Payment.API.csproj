@@ -7,6 +7,10 @@
     <DockerfileContext>..\..\..</DockerfileContext>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Protos\customTypes.proto" />
+  </ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.3.7" />
 		<PackageReference Include="Confluent.Kafka.Extensions.OpenTelemetry" Version="0.2.0" />
@@ -46,6 +50,7 @@
 
 	</ItemGroup>
 	<ItemGroup>
+	  <Protobuf Include="Protos\customTypes.proto" GrpcServices="Client" />
 	  <Protobuf Include="Protos\V1\payment.proto" GrpcServices="Server" />
 	</ItemGroup>
 	<ItemGroup>

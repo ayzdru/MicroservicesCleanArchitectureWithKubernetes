@@ -24,18 +24,18 @@ namespace CleanArchitecture.Services.Order.Application.Commands
         }
         public class UpdateSubscriberUserCommandHandler : IRequestHandler<UpdateSubscriberUserCommand, int>
         {
-            private readonly IPaymentDbContext _paymentDbContext;
+            private readonly IOrderDbContext _orderDbContext;
             private readonly ICurrentUserService _currentUserService;
 
-            public UpdateSubscriberUserCommandHandler(IPaymentDbContext paymentDbContext, ICurrentUserService currentUserService)
+            public UpdateSubscriberUserCommandHandler(IOrderDbContext orderDbContext, ICurrentUserService currentUserService)
             {
-                _paymentDbContext = paymentDbContext;
+                _orderDbContext = orderDbContext;
                 _currentUserService = currentUserService;
             }
 
             public async Task<int> Handle(UpdateSubscriberUserCommand request, CancellationToken cancellationToken)
             {                
-                return await _paymentDbContext.Users.ExecuteUpdateAsync(q => q.SetProperty(a => a.UserName, request.SubscriberUser.UserName).SetProperty(a => a.Email, request.SubscriberUser.Email).SetProperty(b => b.LastModifiedByUserId, _currentUserService.UserId).SetProperty(b => b.LastModified, DateTime.Now), cancellationToken); ;
+                return await _orderDbContext.Users.ExecuteUpdateAsync(q => q.SetProperty(a => a.UserName, request.SubscriberUser.UserName).SetProperty(a => a.Email, request.SubscriberUser.Email).SetProperty(b => b.LastModifiedByUserId, _currentUserService.UserId).SetProperty(b => b.LastModified, DateTime.Now), cancellationToken); ;
             }
         }
     }

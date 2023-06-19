@@ -7,10 +7,12 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using CleanArchitecture.Services.Order.API.Data;
+using CleanArchitecture.Services.Order.API;
 using CleanArchitecture.Services.Order.API.Grpc.V1;
-using CleanArchitecture.Services.Order.API.Interfaces;
 using CleanArchitecture.Services.Order.API.Services;
+using CleanArchitecture.Services.Order.Core.Interfaces;
+using CleanArchitecture.Services.Order.Infrastructure.Data;
+using CleanArchitecture.Services.Order.Infrastructure.IoC;
 using CleanArchitecture.Shared.DataProtection.Redis;
 using CleanArchitecture.Shared.HealthChecks;
 using Confluent.Kafka.Extensions.OpenTelemetry;
@@ -39,91 +41,79 @@ using OpenTelemetry.Trace;
 using StackExchange.Redis;
 using static CleanArchitecture.Services.Basket.API.Grpc.V1.Basket;
 
-namespace CleanArchitecture.Services.Order.API
+ServicePointManager.ServerCertificateValidationCallback +=
+(sender, cert, chain, sslPolicyErrors) => true;
+IdentityModelEventSource.ShowPII = true;
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddGrpcHealthChecks();
+var healthChecks = builder.Services.AddAllHealthChecks();
+var connectionString = builder.Configuration.GetConnectionString("OrderConnectionString");
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment, connectionString);
+
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("sub");
+
+var identityUrl = builder.Configuration.GetValue<string>("IdentityUrl");
+builder.Services.AddAuthentication(options =>
 {
-    public class Program
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+}).AddJwtBearer(options =>
+{
+    options.Authority = identityUrl;
+    options.RequireHttpsMetadata = true;
+    options.Audience = "order";
+    options.BackchannelHttpHandler = new HttpClientHandler
     {
-        public static void Main(string[] args)
+        ServerCertificateCustomValidationCallback =
+                  (message, certificate, chain, sslPolicyErrors) => true
+    };
+});
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy",
+        builder => builder
+            .AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod().WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding"));
+});
+builder.Services.AddAuthorization();
+builder.Services.AddGrpc(options =>
+{
+    if (builder.Environment.IsDevelopment() == true)
+    {
+        options.EnableDetailedErrors = true;
+    }
+    options.MaxReceiveMessageSize = 2 * 1024 * 1024; // 2 MB
+    options.MaxSendMessageSize = 5 * 1024 * 1024; // 5 MB
+}).AddJsonTranscoding();
+builder.Services.AddGrpcSwagger();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1",
+        new OpenApiInfo { Title = "gRPC transcoding", Version = "v1" });
+    var filePath = Path.Combine(System.AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+    c.IncludeXmlComments(filePath);
+    c.IncludeGrpcXmlComments(filePath, includeControllerXmlComments: true);
+    c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
         {
-            ServicePointManager.ServerCertificateValidationCallback +=
-   (sender, cert, chain, sslPolicyErrors) => true;
-            IdentityModelEventSource.ShowPII = true;
-            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-            var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddGrpcHealthChecks();
-            var healthChecks = builder.Services.AddAllHealthChecks();
-            var connectionString = builder.Configuration.GetConnectionString("OrderConnectionString");
-            builder.Services.AddDbContext<OrderDbContext>(options =>
-                   options.UseNpgsql(connectionString));
-
-            var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
-            optionsBuilder.UseNpgsql(connectionString);
-            using (var dbContext = new OrderDbContext(optionsBuilder.Options))
+            AuthorizationCode = new OpenApiOAuthFlow
             {
-                dbContext.Database.Migrate();
-            }
-
-            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("sub");
-
-            var identityUrl = builder.Configuration.GetValue<string>("IdentityUrl");
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            }).AddJwtBearer(options =>
-            {
-                options.Authority = identityUrl;
-                options.RequireHttpsMetadata = true;
-                options.Audience = "order";
-                options.BackchannelHttpHandler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback =
-                              (message, certificate, chain, sslPolicyErrors) => true
-                };
-            });
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder
-                        .AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod().WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding"));
-            });
-            builder.Services.AddAuthorization();
-            builder.Services.AddGrpc(options =>
-            {
-                if (builder.Environment.IsDevelopment() == true)
-                {
-                    options.EnableDetailedErrors = true;
-                }
-                options.MaxReceiveMessageSize = 2 * 1024 * 1024; // 2 MB
-                options.MaxSendMessageSize = 5 * 1024 * 1024; // 5 MB
-            }).AddJsonTranscoding();
-            builder.Services.AddGrpcSwagger();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1",
-                    new OpenApiInfo { Title = "gRPC transcoding", Version = "v1" });
-                                var filePath = Path.Combine(System.AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
-                c.IncludeXmlComments(filePath);
-                c.IncludeGrpcXmlComments(filePath, includeControllerXmlComments: true);
-                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-                {
-                    Type = SecuritySchemeType.OAuth2,
-                    Flows = new OpenApiOAuthFlows
+                AuthorizationUrl = new Uri(identityUrl + "/connect/authorize"),
+                TokenUrl = new Uri(identityUrl + "/connect/token"),
+                Scopes = new Dictionary<string, string>
                     {
-                        AuthorizationCode = new OpenApiOAuthFlow
-                        {
-                            AuthorizationUrl = new Uri(identityUrl + "/connect/authorize"),
-                            TokenUrl = new Uri(identityUrl + "/connect/token"),
-                            Scopes = new Dictionary<string, string>
-                                {
                                     { "order", "Access read/write operations" },
-                                }
-                        }
                     }
-                });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                    {
+            }
+        }
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
                         {
                             new OpenApiSecurityScheme
                             {
@@ -131,177 +121,181 @@ namespace CleanArchitecture.Services.Order.API
                             },
                             new[] { "order" }
                         }
-                    });
-            });
-            builder.Services.AddResponseCompression(opts =>
-            {
-                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                    new[] { "application/octet-stream" });
-            });
-            var kafkaConnectionString = builder.Configuration.GetValue<string>("Kafka");
-            builder.Services.AddTransient<ISubscriberService, SubscriberService>();
-            builder.Services.AddCap(x =>
-            {
-                x.UseEntityFramework<OrderDbContext>();
-                x.UseDashboard();
-                x.UseKafka(kafkaConnectionString);
-                x.FailedRetryCount = 5;
-                x.FailedMessageExpiredAfter = int.MaxValue;
-            });
+        });
+});
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        new[] { "application/octet-stream" });
+});
+var kafkaConnectionString = builder.Configuration.GetValue<string>("Kafka");
+builder.Services.AddTransient<ISubscriberService, SubscriberService>();
+builder.Services.AddCap(x =>
+{
+    x.UseEntityFramework<OrderDbContext>();
+    x.UseDashboard();
+    x.UseKafka(kafkaConnectionString);
+    x.FailedRetryCount = 5;
+    x.FailedMessageExpiredAfter = int.MaxValue;
+});
 
-            builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpContextAccessor();
 
 
-            var basketUrl = builder.Configuration.GetValue<string>("BasketUrl");
+var basketUrl = builder.Configuration.GetValue<string>("BasketUrl");
 
-            builder.Services.AddScoped<ITokenProvider, AppTokenProvider>();
+builder.Services.AddScoped<ITokenProvider, AppTokenProvider>();
 
-            builder.Services.AddGrpcClient<BasketClient>(nameof(BasketClient), o =>
-            {
-                o.Address = new Uri(basketUrl);
-                o.ChannelOptionsActions.Add((opt) =>
-                {
-                    opt.UnsafeUseInsecureChannelCallCredentials = true;
-                });
-            })
-    .ConfigurePrimaryHttpMessageHandler(() =>
+builder.Services.AddGrpcClient<BasketClient>(nameof(BasketClient), o =>
+{
+    o.Address = new Uri(basketUrl);
+    o.ChannelOptionsActions.Add((opt) =>
     {
-        return new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback =
-                              (message, certificate, chain, sslPolicyErrors) => true
-        };
-    }).AddCallCredentials(async (context, metadata, serviceProvider) =>
-    {
-        var provider = serviceProvider.GetRequiredService<ITokenProvider>();
-        var token = await provider.GetTokenAsync();
-        if (string.IsNullOrEmpty(token) == false)
-        {
-            metadata.Add("Authorization", $"Bearer {token}");
-        }
+        opt.UnsafeUseInsecureChannelCallCredentials = true;
     });
-
-            var serviceName = builder.Configuration.GetValue<string>("ServiceName");
-            var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
-            var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
-            var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
-
-            builder.Services.AddRedis(serviceName, cacheRedisConnectionString, kekRedisConnectionString, dekRedisConnectionString);
-            healthChecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-            healthChecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-            healthChecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-
-
-            var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
-            Action<ResourceBuilder> configureResource = r => r.AddService(
-    serviceName: serviceName,
-    serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown",
-    serviceInstanceId: Environment.MachineName);
-            builder.Services.AddOpenTelemetry()
-    .ConfigureResource(configureResource)
-    .WithTracing(t =>
-    {
-        t.AddSource(serviceName)
-            .SetSampler(new AlwaysOnSampler())
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddCapInstrumentation()
-            .AddGrpcClientInstrumentation()
-            .AddEntityFrameworkCoreInstrumentation()
-            .AddGrpcCoreInstrumentation().AddNpgsql().AddConfluentKafkaInstrumentation();
-
-        if (builder.Environment.IsDevelopment() == true)
-        {
-            t.AddConsoleExporter();
-        }
-        else
-        {
-            t.AddRedisInstrumentation(RedisConnections.CacheRedisConnection).AddRedisInstrumentation(RedisConnections.KekRedisConnection).AddRedisInstrumentation(RedisConnections.DekRedisConnection);
-            t.AddOtlpExporter(otlpOptions =>
-            {
-                otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-            });
-        }
-    })
-    .WithMetrics(m =>
-    {
-        m
-            .AddMeter(serviceName)
-            .AddRuntimeInstrumentation()
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation();
-        if (builder.Environment.IsDevelopment() == true)
-        {
-            m.AddConsoleExporter();
-        }
-        else
-        {
-            m.AddOtlpExporter(otlpOptions =>
-            {
-                otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-            });
-        }
-    });
-            builder.Logging.ClearProviders();
-
-            builder.Logging.AddOpenTelemetry(options =>
-            {
-                var resourceBuilder = ResourceBuilder.CreateDefault();
-                configureResource(resourceBuilder);
-                options.SetResourceBuilder(resourceBuilder);
-                if (builder.Environment.IsDevelopment() == true)
-                {
-                    options.AddConsoleExporter();
-                }
-                else
-                {
-                    options.AddOtlpExporter(otlpOptions =>
-                    {
-                        otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-                    });
-                }
-
-            });
-            healthChecks
-                .AddNpgSql(connectionString, "SELECT 1;", null, "PostgreSQL", HealthStatus.Unhealthy, new string[] { "postgresql", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
-                .AddDbContextCheck<OrderDbContext>("EntityFrameworkDbContext", HealthStatus.Unhealthy, new string[] { "entityframework", HealthCheckExtensions.Readiness })
-                .AddKafka(new Confluent.Kafka.ProducerConfig() { BootstrapServers = kafkaConnectionString }, null, "Kafka", null, new string[] { "kafka", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
-                .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
-            var app = builder.Build();
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Order API V1");
-                c.OAuthClientId("OrderSwagger");
-                c.OAuthAppName("OrderSwagger");
-                c.OAuthScopeSeparator(" ");
-                c.OAuthUsePkce();
-            });
-            app.UseAllHealthChecks();
-            app.UseResponseCompression();
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseRouting();
-            app.UseCors("CorsPolicy");
-            app.UseGrpcWeb(new GrpcWebOptions
-            {
-                DefaultEnabled = true
-            });
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.MapGrpcService<OrderServiceV1>().RequireCors("CorsPolicy").EnableGrpcWeb();
-            app.MapGrpcHealthChecksService().RequireCors("CorsPolicy").EnableGrpcWeb();
-            app.MapGet("/", async context =>
-            {
-                await context.Response.WriteAsync("Order MicroService");
-            });
-
-            app.Run();
-        }
-    }
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
+{
+return new HttpClientHandler
+{
+ServerCertificateCustomValidationCallback =
+                  (message, certificate, chain, sslPolicyErrors) => true
+};
+}).AddCallCredentials(async (context, metadata, serviceProvider) =>
+{
+var provider = serviceProvider.GetRequiredService<ITokenProvider>();
+var token = await provider.GetTokenAsync();
+if (string.IsNullOrEmpty(token) == false)
+{
+metadata.Add("Authorization", $"Bearer {token}");
 }
+});
+
+var serviceName = builder.Configuration.GetValue<string>("ServiceName");
+var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
+var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
+var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
+
+builder.Services.AddRedis(serviceName, cacheRedisConnectionString, kekRedisConnectionString, dekRedisConnectionString);
+healthChecks.AddRedis(cacheRedisConnectionString, "Cache", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+healthChecks.AddRedis(kekRedisConnectionString, "KeyEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+healthChecks.AddRedis(dekRedisConnectionString, "DataEncryptionKey", HealthStatus.Unhealthy, new string[] { "redis", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+
+
+var openTelemetryProtocolEndpoint = builder.Configuration.GetValue<string>("OpenTelemetryProtocolEndpoint");
+Action<ResourceBuilder> configureResource = r => r.AddService(
+serviceName: serviceName,
+serviceVersion: typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown",
+serviceInstanceId: Environment.MachineName);
+builder.Services.AddOpenTelemetry()
+.ConfigureResource(configureResource)
+.WithTracing(t =>
+{
+t.AddSource(serviceName)
+.SetSampler(new AlwaysOnSampler())
+.AddHttpClientInstrumentation()
+.AddAspNetCoreInstrumentation()
+.AddCapInstrumentation()
+.AddGrpcClientInstrumentation()
+.AddEntityFrameworkCoreInstrumentation()
+.AddGrpcCoreInstrumentation().AddNpgsql().AddConfluentKafkaInstrumentation();
+
+if (builder.Environment.IsDevelopment() == true)
+{
+t.AddConsoleExporter();
+}
+else
+{
+t.AddRedisInstrumentation(RedisConnections.CacheRedisConnection).AddRedisInstrumentation(RedisConnections.KekRedisConnection).AddRedisInstrumentation(RedisConnections.DekRedisConnection);
+t.AddOtlpExporter(otlpOptions =>
+{
+    otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+});
+}
+})
+.WithMetrics(m =>
+{
+m
+.AddMeter(serviceName)
+.AddRuntimeInstrumentation()
+.AddHttpClientInstrumentation()
+.AddAspNetCoreInstrumentation();
+if (builder.Environment.IsDevelopment() == true)
+{
+m.AddConsoleExporter();
+}
+else
+{
+m.AddOtlpExporter(otlpOptions =>
+{
+    otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+});
+}
+});
+builder.Logging.ClearProviders();
+
+builder.Logging.AddOpenTelemetry(options =>
+{
+    var resourceBuilder = ResourceBuilder.CreateDefault();
+    configureResource(resourceBuilder);
+    options.SetResourceBuilder(resourceBuilder);
+    if (builder.Environment.IsDevelopment() == true)
+    {
+        options.AddConsoleExporter();
+    }
+    else
+    {
+        options.AddOtlpExporter(otlpOptions =>
+        {
+            otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+        });
+    }
+
+});
+healthChecks
+    .AddNpgSql(connectionString, "SELECT 1;", null, "PostgreSQL", HealthStatus.Unhealthy, new string[] { "postgresql", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
+    .AddDbContextCheck<OrderDbContext>("EntityFrameworkDbContext", HealthStatus.Unhealthy, new string[] { "entityframework", HealthCheckExtensions.Readiness })
+    .AddKafka(new Confluent.Kafka.ProducerConfig() { BootstrapServers = kafkaConnectionString }, null, "Kafka", null, new string[] { "kafka", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut)
+    .AddIdentityServer(new Uri(identityUrl), "IdentityServer", HealthStatus.Unhealthy, new string[] { "identityserver", HealthCheckExtensions.Readiness }, HealthCheckExtensions.DefaultTimeOut);
+var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var initialiser = scope.ServiceProvider.GetRequiredService<OrderDbContextInitialiser>();
+    await initialiser.InitialiseAsync();
+    await initialiser.SeedAsync();
+}
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Order API V1");
+    c.OAuthClientId("OrderSwagger");
+    c.OAuthAppName("OrderSwagger");
+    c.OAuthScopeSeparator(" ");
+    c.OAuthUsePkce();
+});
+app.UseAllHealthChecks();
+app.UseResponseCompression();
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+
+app.UseRouting();
+app.UseCors("CorsPolicy");
+app.UseGrpcWeb(new GrpcWebOptions
+{
+    DefaultEnabled = true
+});
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapGrpcService<OrderServiceV1>().RequireCors("CorsPolicy").EnableGrpcWeb();
+app.MapGrpcHealthChecksService().RequireCors("CorsPolicy").EnableGrpcWeb();
+app.MapGet("/", async context =>
+{
+    await context.Response.WriteAsync("Order MicroService");
+});
+
+app.Run();
+public partial class Program { }

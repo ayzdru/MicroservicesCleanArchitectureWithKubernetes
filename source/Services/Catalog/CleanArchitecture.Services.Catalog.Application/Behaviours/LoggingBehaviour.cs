@@ -11,13 +11,11 @@ public class LoggingBehaviour<TRequest> : IRequestPreProcessor<TRequest> where T
 {
     private readonly ILogger _logger;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IIdentityService _identityService;
 
-    public LoggingBehaviour(ILogger<TRequest> logger, ICurrentUserService currentUserService, IIdentityService identityService)
+    public LoggingBehaviour(ILogger<TRequest> logger, ICurrentUserService currentUserService)
     {
         _logger = logger;
         _currentUserService = currentUserService;
-        _identityService = identityService;
     }
 
     public async Task Process(TRequest request, CancellationToken cancellationToken)
@@ -28,7 +26,7 @@ public class LoggingBehaviour<TRequest> : IRequestPreProcessor<TRequest> where T
 
         if (_currentUserService.UserId.HasValue)
         {
-            userName = await _identityService.GetUserNameAsync(userId);
+            userName = await _currentUserService.GetUserNameAsync(userId);
         }
 
         _logger.LogInformation("CleanArchitecture Request: {Name} {@UserId} {@UserName} {@Request}",

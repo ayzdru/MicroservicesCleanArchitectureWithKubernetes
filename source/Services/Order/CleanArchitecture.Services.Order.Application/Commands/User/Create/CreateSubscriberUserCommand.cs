@@ -22,17 +22,17 @@ namespace CleanArchitecture.Services.Order.Application.Commands
         }
         public class CreateSubscriberUserCommandHandler : IRequestHandler<CreateSubscriberUserCommand, int>
         {
-            private readonly IPaymentDbContext _paymentDbContext;
+            private readonly IOrderDbContext _orderDbContext;
             private readonly IMediator _mediator;
-            public CreateSubscriberUserCommandHandler(IPaymentDbContext paymentDbContext, IMediator mediator)
+            public CreateSubscriberUserCommandHandler(IOrderDbContext orderDbContext, IMediator mediator)
             {
-                _paymentDbContext = paymentDbContext;
+                _orderDbContext = orderDbContext;
                 _mediator = mediator;
             }
             public async Task<int> Handle(CreateSubscriberUserCommand request, CancellationToken cancellationToken)
             {
-                _paymentDbContext.Users.Add(new User(request.SubscriberUser.Id, request.SubscriberUser.UserName, request.SubscriberUser.Email));                    
-                var affected = await _paymentDbContext.SaveChangesAsync(cancellationToken);
+                _orderDbContext.Users.Add(new User(request.SubscriberUser.Id, request.SubscriberUser.UserName, request.SubscriberUser.Email));                    
+                var affected = await _orderDbContext.SaveChangesAsync(cancellationToken);
                 await _mediator.Publish(new CreateSubscriberUserNotification { SubscriberUser = request.SubscriberUser }, cancellationToken);
                 return affected;
             }

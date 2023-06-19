@@ -32,7 +32,7 @@ namespace CleanArchitecture.Services.Catalog.Application.Queries
 
             public async Task<ProductModel> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
             {
-                return await _catalogDbContext.Products.GetById(request.ProductId).Select(q => new ProductModel(q.Id, q.Name, q.Description, q.Price)).SingleOrDefaultAsync(cancellationToken);
+                return await _catalogDbContext.Products.GetById(request.ProductId).Select(q => new ProductModel(q.Id, q.Name, q.Description, q.Price.Amount, q.Price.Currency.Name)).SingleOrDefaultAsync(cancellationToken);
             }
         }
     }

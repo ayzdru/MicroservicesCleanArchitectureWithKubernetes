@@ -5,9 +5,7 @@ using CleanArchitecture.Services.Catalog.Application.Interfaces;
 using CleanArchitecture.Services.Catalog.Application.IoC;
 using CleanArchitecture.Services.Catalog.Core.Entities;
 using CleanArchitecture.Services.Catalog.Core.Interfaces;
-using CleanArchitecture.Services.Catalog.Infrastructure.Data;
 using CleanArchitecture.Services.Catalog.Infrastructure.Interceptors;
-using CleanArchitecture.Services.Catalog.Infrastructure.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Hosting;
@@ -28,7 +26,6 @@ namespace CleanArchitecture.Services.Catalog.Infrastructure.IoC
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, string connectionString)
         {
-            services.AddTransient<IIdentityService, IdentityService>();
             services.AddDbContext<CatalogDbContext>(options =>
                    options.UseNpgsql(connectionString));
             services.AddScoped<EntitySaveChangesInterceptor>();

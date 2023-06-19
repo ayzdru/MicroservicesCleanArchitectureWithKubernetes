@@ -52,6 +52,10 @@
 		<Copy SourceFiles="@(Protos)" DestinationFolder="..\..\..\Web\CleanArchitecture.Web.BlazorWebAssembly\Client\Protos\V1" />
 	</Target>
 	<ItemGroup>
+	  <None Remove="Protos\customTypes.proto" />
+	</ItemGroup>
+	<ItemGroup>
+		<Protobuf Include="Protos\customTypes.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\V1\product.proto" GrpcServices="Server" />
 	</ItemGroup>
 	<ItemGroup>

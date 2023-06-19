@@ -23,16 +23,16 @@ namespace CleanArchitecture.Services.Order.Application.Commands
 
         public class DeleteSubscriberUserCommandHandler : IRequestHandler<DeleteSubscriberUserCommand, int>
         {
-            private readonly IPaymentDbContext  _paymentDbContext;
+            private readonly IOrderDbContext _orderDbContext;
 
-            public DeleteSubscriberUserCommandHandler(IPaymentDbContext paymentDbContext)
+            public DeleteSubscriberUserCommandHandler(IOrderDbContext orderDbContext)
             {
-                _paymentDbContext = paymentDbContext;
+                _orderDbContext = orderDbContext;
             }
 
             public async Task<int> Handle(DeleteSubscriberUserCommand request, CancellationToken cancellationToken)
             {
-                return await _paymentDbContext.Users.GetById(request.Id).ExecuteDeleteAsync(cancellationToken);
+                return await _orderDbContext.Users.GetById(request.Id).ExecuteDeleteAsync(cancellationToken);
             }
         }
     }

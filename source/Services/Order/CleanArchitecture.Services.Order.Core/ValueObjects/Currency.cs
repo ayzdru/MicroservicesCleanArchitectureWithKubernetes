@@ -8,7 +8,6 @@ namespace CleanArchitecture.Services.Order.Core.ValueObjects
 {
     public class Currency : ValueObject
     {
-        public static Currency TL = new("TL", "₺");
         public static Currency USD = new("USD", "$");
 
         public Currency(string name, string symbol)

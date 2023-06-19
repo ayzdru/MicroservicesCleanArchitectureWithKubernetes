@@ -2,19 +2,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CleanArchitecture.Services.Order.Core.Entities
 {
     public class Order : BaseEntity
     {
         public Money TotalAmount { get; private set; }
+        private readonly List<OrderItem> _orderItems = new List<OrderItem>();
+        public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
         public Order(Guid id, Money totalAmount)
         {
             Id = id;
             TotalAmount = totalAmount;
+        }      
+        public void AddOrderItem(OrderItem orderItem)
+        {
+            _orderItems.Add(orderItem);
         }
-      
     }
 }

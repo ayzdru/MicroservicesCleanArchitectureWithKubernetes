@@ -1,60 +1,38 @@
-﻿using CleanArchitecture.Services.Order.API.Data;
-using CleanArchitecture.Services.Order.API.Interfaces;
+﻿using CleanArchitecture.Services.Order.Application.Commands;
+using CleanArchitecture.Services.Order.Core.Interfaces;
+using CleanArchitecture.Services.Order.Core.Models;
+using CleanArchitecture.Shared.DataProtection.Redis;
 using DotNetCore.CAP;
+using MediatR;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CleanArchitecture.Services.Order.API.Services
 {
-
-    public class CapUserEntity
-    {
-        public string Id { get; set; }
-        public string UserName { get; set; }
-        public string Email { get; set; }
-    }
     public class SubscriberService : ISubscriberService, ICapSubscribe
     {
-        private readonly OrderDbContext _orderDbContext;
-        public SubscriberService(OrderDbContext orderDbContext)
+        private readonly IMediator _mediator;
+
+        public SubscriberService(IMediator mediator)
         {
-            _orderDbContext = orderDbContext;
+            _mediator = mediator;
         }
+
         [CapSubscribe("UserAdded")]
-        public void UserAdded(CapUserEntity capUserEntity)
+        public async Task UserAdded(SubscriberUserModel subscriberUserModel)
         {
-            _orderDbContext.Users.Add(new Entities.User { Id = Guid.Parse(capUserEntity.Id), UserName = capUserEntity.UserName, Email = capUserEntity.Email });
-            _orderDbContext.SaveChanges();
+            await _mediator.Send(new CreateSubscriberUserCommand(subscriberUserModel));
         }
         [CapSubscribe("UserDeleted")]
-        public void UserDeleted(CapUserEntity capUserEntity)
+        public async Task UserDeleted(SubscriberUserModel subscriberUserModel)
         {
-            var user = _orderDbContext.Users.Where(q => q.Id == Guid.Parse(capUserEntity.Id)).SingleOrDefault();
-            if (user != null)
-            {
-                _orderDbContext.Users.Remove(user);
-                _orderDbContext.SaveChanges();
-            }
-            else
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            await _mediator.Send(new DeleteSubscriberUserCommand(subscriberUserModel.Id));
         }
         [CapSubscribe("UserUpdated")]
-        public void UserUpdated(CapUserEntity capUserEntity)
+        public async Task UserUpdated(SubscriberUserModel subscriberUserModel)
         {
-            var user = _orderDbContext.Users.Where(q => q.Id == Guid.Parse(capUserEntity.Id)).SingleOrDefault();
-            if (user != null)
-            {
-                user.UserName = capUserEntity.UserName;
-                user.Email = capUserEntity.Email;
-                _orderDbContext.Users.Update(user);
-                _orderDbContext.SaveChanges();
-            }
-            else
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            await _mediator.Send(new UpdateSubscriberUserCommand(subscriberUserModel));
         }
     }
 }

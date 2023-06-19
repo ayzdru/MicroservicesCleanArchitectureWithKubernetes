@@ -157,46 +157,46 @@ builder.Services.AddOpenTelemetry()
 .ConfigureResource(configureResource)
 .WithTracing(t =>
 {
-t.AddSource(serviceName)
-.SetSampler(new AlwaysOnSampler())
-.AddHttpClientInstrumentation()
-.AddAspNetCoreInstrumentation()
-.AddCapInstrumentation()
-.AddGrpcClientInstrumentation()
-.AddEntityFrameworkCoreInstrumentation()
-.AddGrpcCoreInstrumentation().AddNpgsql().AddConfluentKafkaInstrumentation();
+    t.AddSource(serviceName)
+    .SetSampler(new AlwaysOnSampler())
+    .AddHttpClientInstrumentation()
+    .AddAspNetCoreInstrumentation()
+    .AddCapInstrumentation()
+    .AddGrpcClientInstrumentation()
+    .AddEntityFrameworkCoreInstrumentation()
+    .AddGrpcCoreInstrumentation().AddNpgsql().AddConfluentKafkaInstrumentation();
 
-if (builder.Environment.IsDevelopment() == true)
-{
-t.AddConsoleExporter();
-}
-else
-{
-t.AddRedisInstrumentation(RedisConnections.CacheRedisConnection).AddRedisInstrumentation(RedisConnections.KekRedisConnection).AddRedisInstrumentation(RedisConnections.DekRedisConnection);
-t.AddOtlpExporter(otlpOptions =>
-{
-    otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-});
-}
+    if (builder.Environment.IsDevelopment() == true)
+    {
+        t.AddConsoleExporter();
+    }
+    else
+    {
+        t.AddRedisInstrumentation(RedisConnections.CacheRedisConnection).AddRedisInstrumentation(RedisConnections.KekRedisConnection).AddRedisInstrumentation(RedisConnections.DekRedisConnection);
+        t.AddOtlpExporter(otlpOptions =>
+        {
+            otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+        });
+    }
 })
 .WithMetrics(m =>
 {
-m
-.AddMeter(serviceName)
-.AddRuntimeInstrumentation()
-.AddHttpClientInstrumentation()
-.AddAspNetCoreInstrumentation();
-if (builder.Environment.IsDevelopment() == true)
-{
-m.AddConsoleExporter();
-}
-else
-{
-m.AddOtlpExporter(otlpOptions =>
-{
-    otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
-});
-}
+    m
+    .AddMeter(serviceName)
+    .AddRuntimeInstrumentation()
+    .AddHttpClientInstrumentation()
+    .AddAspNetCoreInstrumentation();
+    if (builder.Environment.IsDevelopment() == true)
+    {
+        m.AddConsoleExporter();
+    }
+    else
+    {
+        m.AddOtlpExporter(otlpOptions =>
+        {
+            otlpOptions.Endpoint = new Uri(openTelemetryProtocolEndpoint);
+        });
+    }
 });
 builder.Logging.ClearProviders();
 

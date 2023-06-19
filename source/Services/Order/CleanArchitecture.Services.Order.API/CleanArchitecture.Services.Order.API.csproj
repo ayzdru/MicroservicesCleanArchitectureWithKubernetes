@@ -11,33 +11,34 @@
 
   <ItemGroup>
     <None Remove="Grpc\order.proto" />
+    <None Remove="Protos\customTypes.proto" />
   </ItemGroup>
 
   <ItemGroup>
 	  <PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.3.7" />
 	  <PackageReference Include="Confluent.Kafka.Extensions.OpenTelemetry" Version="0.2.0" />
-	  <PackageReference Include="DotNetCore.CAP" Version="7.1.3" />
-	  <PackageReference Include="DotNetCore.CAP.Dashboard" Version="7.1.3" />
-	  <PackageReference Include="DotNetCore.CAP.OpenTelemetry" Version="7.1.3" />
-	  <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="7.1.3" />
-	  <PackageReference Include="DotNetCore.CAP.Kafka" Version="7.1.3" />
+	  <PackageReference Include="DotNetCore.CAP" Version="7.1.4" />
+	  <PackageReference Include="DotNetCore.CAP.Dashboard" Version="7.1.4" />
+	  <PackageReference Include="DotNetCore.CAP.OpenTelemetry" Version="7.1.4" />
+	  <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="7.1.4" />
+	  <PackageReference Include="DotNetCore.CAP.Kafka" Version="7.1.4" />
 	  <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="6.0.2" />
 	  <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2" />
 	  <PackageReference Include="AspNetCore.HealthChecks.Kafka" Version="6.0.3" />
 	  <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />
-	  <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.53.0" />
+	  <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.54.0" />
 	  <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="7.0.7" />
 
-	  <PackageReference Include="Google.Protobuf" Version="3.23.2" />
-    <PackageReference Include="Grpc.AspNetCore.Web" Version="2.53.0" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.53.0" />
+	  <PackageReference Include="Google.Protobuf" Version="3.23.3" />
+    <PackageReference Include="Grpc.AspNetCore.Web" Version="2.54.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.54.0" />
     <PackageReference Include="Grpc.Tools" Version="2.54.0">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.7" />
 	<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.31.0" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.53.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.54.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.7" />	 
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.7">
       <PrivateAssets>all</PrivateAssets>
@@ -63,10 +64,7 @@
     <Protobuf Include="Protos\V1\order.proto" GrpcServices="Server" />
 	  <Protobuf Include="Protos\V1\basket.proto" GrpcServices="Client" />
 	  <Protobuf Include="Protos\V1\product.proto" GrpcServices="Client" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Data\Migrations\" />
+	  <Protobuf Include="Protos\customTypes.proto" GrpcServices="Client" />
   </ItemGroup>
 	<ItemGroup>
 		<Protos Include="Protos\V1\*.*" />

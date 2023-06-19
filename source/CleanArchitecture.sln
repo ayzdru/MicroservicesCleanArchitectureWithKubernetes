@@ -51,29 +51,29 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Catalog.Infrastructure", "Services\Catalog\CleanArchitecture.Services.Catalog.Infrastructure\CleanArchitecture.Services.Catalog.Infrastructure.csproj", "{D2680A28-69A8-434C-9A1B-4A798FAE84CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Order.Core", "Services\Order\CleanArchitecture.Services.Order.Core\CleanArchitecture.Services.Order.Core.csproj", "{12996A48-C7A4-45C7-B503-9491B93A32B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Order.Core", "Services\Order\CleanArchitecture.Services.Order.Core\CleanArchitecture.Services.Order.Core.csproj", "{12996A48-C7A4-45C7-B503-9491B93A32B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Order.Application", "Services\Order\CleanArchitecture.Services.Order.Application\CleanArchitecture.Services.Order.Application.csproj", "{FD0C2101-73BB-4F1A-8403-B2E23713D6D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Order.Application", "Services\Order\CleanArchitecture.Services.Order.Application\CleanArchitecture.Services.Order.Application.csproj", "{FD0C2101-73BB-4F1A-8403-B2E23713D6D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Order.Infrastructure", "Services\Order\CleanArchitecture.Services.Order.Infrastructure\CleanArchitecture.Services.Order.Infrastructure.csproj", "{F7E34BAF-4359-4282-9624-A51A146C2447}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Order.Infrastructure", "Services\Order\CleanArchitecture.Services.Order.Infrastructure\CleanArchitecture.Services.Order.Infrastructure.csproj", "{F7E34BAF-4359-4282-9624-A51A146C2447}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Payment.Core", "Services\Payment\CleanArchitecture.Services.Payment.Core\CleanArchitecture.Services.Payment.Core.csproj", "{CF79B7FF-4A5A-4ED9-B30A-46D7CB07783C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Payment.Core", "Services\Payment\CleanArchitecture.Services.Payment.Core\CleanArchitecture.Services.Payment.Core.csproj", "{CF79B7FF-4A5A-4ED9-B30A-46D7CB07783C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Payment.Application", "Services\Payment\CleanArchitecture.Services.Payment.Application\CleanArchitecture.Services.Payment.Application.csproj", "{EA1411D6-B6D4-44E6-85B4-B7C736E3C59B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Payment.Application", "Services\Payment\CleanArchitecture.Services.Payment.Application\CleanArchitecture.Services.Payment.Application.csproj", "{EA1411D6-B6D4-44E6-85B4-B7C736E3C59B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Payment.Infrastructure", "Services\Payment\CleanArchitecture.Services.Payment.Infrastructure\CleanArchitecture.Services.Payment.Infrastructure.csproj", "{C77A528B-88E1-4A8B-9647-AE73EA80303A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Payment.Infrastructure", "Services\Payment\CleanArchitecture.Services.Payment.Infrastructure\CleanArchitecture.Services.Payment.Infrastructure.csproj", "{C77A528B-88E1-4A8B-9647-AE73EA80303A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Identity.Core", "Services\Identity\CleanArchitecture.Services.Identity.Core\CleanArchitecture.Services.Identity.Core.csproj", "{4C52B256-8991-42DD-BCB9-52F1F5220683}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Identity.Core", "Services\Identity\CleanArchitecture.Services.Identity.Core\CleanArchitecture.Services.Identity.Core.csproj", "{4C52B256-8991-42DD-BCB9-52F1F5220683}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Identity.Application", "Services\Identity\CleanArchitecture.Services.Identity.Application\CleanArchitecture.Services.Identity.Application.csproj", "{E26D9AEB-C34E-4469-AC42-4757ED49C473}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Identity.Application", "Services\Identity\CleanArchitecture.Services.Identity.Application\CleanArchitecture.Services.Identity.Application.csproj", "{E26D9AEB-C34E-4469-AC42-4757ED49C473}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Identity.Infrastructure", "Services\Identity\CleanArchitecture.Services.Identity.Infrastructure\CleanArchitecture.Services.Identity.Infrastructure.csproj", "{2128C1E6-C230-4025-9260-AA32B8FF7F9C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Identity.Infrastructure", "Services\Identity\CleanArchitecture.Services.Identity.Infrastructure\CleanArchitecture.Services.Identity.Infrastructure.csproj", "{2128C1E6-C230-4025-9260-AA32B8FF7F9C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Basket.Core", "Services\Basket\CleanArchitecture.Services.Basket.Core\CleanArchitecture.Services.Basket.Core.csproj", "{5FE550AC-DC15-49D6-9EB3-3B2B0D33065E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Basket.Core", "Services\Basket\CleanArchitecture.Services.Basket.Core\CleanArchitecture.Services.Basket.Core.csproj", "{5FE550AC-DC15-49D6-9EB3-3B2B0D33065E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Basket.Application", "Services\Basket\CleanArchitecture.Services.Basket.Application\CleanArchitecture.Services.Basket.Application.csproj", "{B08B163C-919C-4455-8DAA-CC023C96DC82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Basket.Application", "Services\Basket\CleanArchitecture.Services.Basket.Application\CleanArchitecture.Services.Basket.Application.csproj", "{B08B163C-919C-4455-8DAA-CC023C96DC82}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArchitecture.Services.Basket.Infrastructure", "Services\Basket\CleanArchitecture.Services.Basket.Infrastructure\CleanArchitecture.Services.Basket.Infrastructure.csproj", "{CB34ADCF-B506-4D7C-BFDF-2814105EEA51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CleanArchitecture.Services.Basket.Infrastructure", "Services\Basket\CleanArchitecture.Services.Basket.Infrastructure\CleanArchitecture.Services.Basket.Infrastructure.csproj", "{CB34ADCF-B506-4D7C-BFDF-2814105EEA51}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

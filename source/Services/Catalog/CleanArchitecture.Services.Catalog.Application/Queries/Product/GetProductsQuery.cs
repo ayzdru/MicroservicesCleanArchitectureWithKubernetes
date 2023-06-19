@@ -24,7 +24,7 @@ namespace CleanArchitecture.Services.Catalog.Application.Queries
 
             public Task<List<ProductModel>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
             {
-                return _catalogDbContext.Products.Select(q => new ProductModel(q.Id,q.Name,q.Description,q.Price)).ToListAsync(cancellationToken);
+                return _catalogDbContext.Products.Select(q => new ProductModel(q.Id,q.Name,q.Description,q.Price.Amount, q.Price.Currency.Name)).ToListAsync(cancellationToken);
             }
         }
     }

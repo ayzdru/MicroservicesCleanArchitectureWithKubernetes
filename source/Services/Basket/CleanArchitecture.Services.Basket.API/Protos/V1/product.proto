@@ -1,6 +1,7 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
+import "Protos/customTypes.proto";
 option csharp_namespace = "CleanArchitecture.Services.Catalog.API.Grpc.V1";
 
 package Product.V1;
@@ -26,7 +27,7 @@ message ProductResponse {
 	string id = 1;
 	string name = 2;
 	string description = 3;
-	double price = 4;
+	customTypes.DecimalValue price = 4;
 }
 message GetProductByIdRequest{
 	string productId = 1;

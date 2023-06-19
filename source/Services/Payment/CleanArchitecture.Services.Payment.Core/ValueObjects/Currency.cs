@@ -8,7 +8,6 @@ namespace CleanArchitecture.Services.Payment.Core.ValueObjects
 {
     public class Currency : ValueObject
     {
-        public static Currency TL = new("TL", "₺");
         public static Currency USD = new("USD", "$");
 
         public Currency(string name, string symbol)
@@ -24,8 +23,9 @@ namespace CleanArchitecture.Services.Payment.Core.ValueObjects
         public string Symbol { get; }
 
         public override string ToString() => Symbol;
+        
 
-        public static implicit operator string(Currency currency) => currency.ToString(); 
+        public static implicit operator string(Currency currency) => currency.ToString();
         protected override IEnumerable<object> GetEqualityComponents()
         {
             yield return Name;

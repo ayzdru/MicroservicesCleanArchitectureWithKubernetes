@@ -7,5 +7,6 @@ public partial class Constants
     public static class Order
     {
 
+        public const bool TotalAmountRequired = true;
     }
 }

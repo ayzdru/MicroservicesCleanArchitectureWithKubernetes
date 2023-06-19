@@ -38,11 +38,17 @@
 	  <PackageReference Include="Grpc.AspNetCore" Version="2.53.0" />
   </ItemGroup>
   <ItemGroup>	 
+    <Protobuf Include="Protos\customTypes.proto" GrpcServices="Client" />	 
     <Protobuf Include="Protos\V1\product.proto" GrpcServices="Client" />   
     <Protobuf Include="Protos\V1\basket.proto" GrpcServices="Server" />
+	  <Protobuf Include="Protos\customTypes.proto" GrpcServices="Client" />
+
   </ItemGroup>
 	<ItemGroup>
 		<Protos Include="Protos\V1\*.*" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="Protos\customTypes.proto" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />

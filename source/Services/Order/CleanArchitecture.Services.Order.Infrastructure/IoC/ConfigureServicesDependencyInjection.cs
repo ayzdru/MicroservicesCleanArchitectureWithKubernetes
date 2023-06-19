@@ -4,7 +4,6 @@ using CleanArchitecture.Services.Order.Core.Entities;
 using CleanArchitecture.Services.Order.Core.Interfaces;
 using CleanArchitecture.Services.Order.Infrastructure.Data;
 using CleanArchitecture.Services.Order.Infrastructure.Interceptors;
-using CleanArchitecture.Services.Order.Infrastructure.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Hosting;
@@ -25,14 +24,13 @@ namespace CleanArchitecture.Services.Order.Infrastructure.IoC
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, string connectionString)
         {
-            services.AddTransient<IIdentityService, IdentityService>();
-            services.AddDbContext<PaymentDbContext>(options =>
+            services.AddDbContext<OrderDbContext>(options =>
                    options.UseNpgsql(connectionString));
             services.AddScoped<EntitySaveChangesInterceptor>();
-            services.AddScoped<IPaymentDbContext>(provider => provider.GetService<PaymentDbContext>());
+            services.AddScoped<IOrderDbContext>(provider => provider.GetService<OrderDbContext>());
             if (webHostEnvironment.IsDevelopment())
             {
-                services.AddScoped<PaymentDbContextInitialiser>();
+                services.AddScoped<OrderDbContextInitialiser>();
             }
             services.AddApplication();
             return services;

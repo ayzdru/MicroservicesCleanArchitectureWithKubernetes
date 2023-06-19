@@ -11,14 +11,16 @@ namespace CleanArchitecture.Services.Catalog.Application.Models
         public Guid Id { get; init; }
         public string Name { get; init; }
         public string Description { get; init; }
-        public double Price { get; init; }
-        public ProductModel(Guid id, string name, string description, double price)
+        public decimal Price { get; init; }
+        public string  Currency { get; init; }
+        public ProductModel(Guid id, string name, string description, decimal price, string currency)
         {
             Id = id;
             Name = name;
             Description = description;
             Price = price;
-        }      
-       
+            Currency = currency;
+        }
+
     }
 }

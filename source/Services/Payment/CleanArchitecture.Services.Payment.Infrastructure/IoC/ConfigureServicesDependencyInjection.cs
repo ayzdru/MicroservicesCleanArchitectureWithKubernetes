@@ -4,7 +4,6 @@ using CleanArchitecture.Services.Payment.Core.Entities;
 using CleanArchitecture.Services.Payment.Core.Interfaces;
 using CleanArchitecture.Services.Payment.Infrastructure.Data;
 using CleanArchitecture.Services.Payment.Infrastructure.Interceptors;
-using CleanArchitecture.Services.Payment.Infrastructure.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Hosting;
@@ -25,7 +24,6 @@ namespace CleanArchitecture.Services.Payment.Infrastructure.IoC
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, string connectionString)
         {
-            services.AddTransient<IIdentityService, IdentityService>();
             services.AddDbContext<PaymentDbContext>(options =>
                    options.UseNpgsql(connectionString));
             services.AddScoped<EntitySaveChangesInterceptor>();

@@ -9,6 +9,5 @@ namespace CleanArchitecture.Services.Order.Core.Interfaces
         Task UserAdded(SubscriberUserModel  subscriberUserModel);
         Task UserDeleted(SubscriberUserModel subscriberUserModel);
         Task UserUpdated(SubscriberUserModel subscriberUserModel);
-        Task OrderAdded(SubscriberOrderModel subscriberOrderModel);
     }
 }
