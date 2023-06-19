@@ -54,8 +54,6 @@
 	  <Protobuf Include="Protos\V1\payment.proto" GrpcServices="Server" />
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore.csproj" />
-	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />
 	  <ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj" />
 	  <ProjectReference Include="..\CleanArchitecture.Services.Payment.Infrastructure\CleanArchitecture.Services.Payment.Infrastructure.csproj" />
 	</ItemGroup>

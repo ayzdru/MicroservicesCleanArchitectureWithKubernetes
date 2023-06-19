@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -6,4 +6,26 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\Configurations\" />
+    <Folder Include="Data\Migrations\" />
+  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="EntityFrameworkCore.Triggered" Version="3.2.2" />
+		<PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="7.0.7" />
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.7" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.7">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore\CleanArchitecture.Shared.DataEncryption.EntityFrameworkCore.csproj" />
+		<ProjectReference Include="..\..\..\Shared\CleanArchitecture.Shared.DataProtection.Redis\CleanArchitecture.Shared.DataProtection.Redis.csproj" />
+		<ProjectReference Include="..\CleanArchitecture.Services.Identity.Application\CleanArchitecture.Services.Identity.Application.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="Data\Migrations\" />
+	</ItemGroup>
 </Project>

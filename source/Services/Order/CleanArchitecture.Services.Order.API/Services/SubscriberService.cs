@@ -27,7 +27,7 @@ namespace CleanArchitecture.Services.Order.API.Services
         [CapSubscribe("UserDeleted")]
         public async Task UserDeleted(SubscriberUserModel subscriberUserModel)
         {
-            await _mediator.Send(new DeleteSubscriberUserCommand(subscriberUserModel.Id));
+            await _mediator.Send(new DeleteSubscriberUserCommand(Guid.Parse(subscriberUserModel.Id)));
         }
         [CapSubscribe("UserUpdated")]
         public async Task UserUpdated(SubscriberUserModel subscriberUserModel)

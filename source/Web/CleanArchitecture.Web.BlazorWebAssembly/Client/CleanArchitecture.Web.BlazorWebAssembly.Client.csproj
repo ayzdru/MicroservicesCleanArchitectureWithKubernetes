@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Protos\customTypes.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.7" PrivateAssets="all" />
 	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.7" />
@@ -19,6 +23,7 @@
 	  <PackageReference Include="Grpc.Net.Client.Web" Version="2.53.0" />
   </ItemGroup>
 	<ItemGroup>
+		<Protobuf Include="Protos\customTypes.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\V1\order.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\V1\basket.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\V1\product.proto" GrpcServices="Client" />

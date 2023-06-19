@@ -91,11 +91,11 @@ else{
 @code {
     [CascadingParameter]
     protected Task<AuthenticationState> AuthState { get; set; }
-    private double _total = 0;
+    private decimal _total = 0;
 
     private void SumTotal()
     {
-        _total = BasketState.BasketItems.Sum(q => q.Price * q.Quantity);
+        _total = BasketState.BasketItems.Sum(q => (decimal)q.Price * q.Quantity);
     }
     private async Task UpdateQuantity(BasketItemResponse basketItem)
     {

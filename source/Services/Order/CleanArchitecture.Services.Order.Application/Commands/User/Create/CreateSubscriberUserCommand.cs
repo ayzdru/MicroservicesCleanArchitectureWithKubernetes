@@ -31,7 +31,7 @@ namespace CleanArchitecture.Services.Order.Application.Commands
             }
             public async Task<int> Handle(CreateSubscriberUserCommand request, CancellationToken cancellationToken)
             {
-                _orderDbContext.Users.Add(new User(request.SubscriberUser.Id, request.SubscriberUser.UserName, request.SubscriberUser.Email));                    
+                _orderDbContext.Users.Add(new User(Guid.Parse(request.SubscriberUser.Id), request.SubscriberUser.UserName, request.SubscriberUser.Email));                    
                 var affected = await _orderDbContext.SaveChangesAsync(cancellationToken);
                 await _mediator.Publish(new CreateSubscriberUserNotification { SubscriberUser = request.SubscriberUser }, cancellationToken);
                 return affected;

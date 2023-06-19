@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CleanArchitecture.Services.Catalog.Core.Models
+namespace CleanArchitecture.Services.Identity.Core.Models
 {
     public class SubscriberUserModel
     {
