@@ -63,7 +63,7 @@ else{
                                         </div>
                                     </div>
                                 </td>
-                                <td>@basketItem.Price</td>
+                                <td>@((decimal)basketItem.Price) @basketItem.PriceCurrency</td>
                                 <td data-th="Quantity">
                                     <input type="number" class="form-control text-center" value="@basketItem.Quantity" @onchange="@((ChangeEventArgs e) => { if (int.TryParse(e.Value.ToString(), out int value) && value > 0){ basketItem.Quantity = value; } })">
                                 </td>

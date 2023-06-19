@@ -20,7 +20,7 @@ else
                 <div class="card h-100">
                 <img src="https://picsum.photos/277/180" class="card-img-top" alt="Placeholder image">
                 <div class="card-body">
-                    <h5 class="card-title">@product.Name - <small class="text-muted">@product.Price₺</small></h5>
+                    <h5 class="card-title">@product.Name - <small class="text-muted">@((decimal)product.Price) @product.PriceCurrency</small></h5>
                     <p class="card-text">@product.Description</p>
                 </div>
                 <div class="card-footer">

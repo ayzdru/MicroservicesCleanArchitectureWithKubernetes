@@ -46,7 +46,7 @@ namespace CleanArchitecture.Services.Basket.API.Grpc.V1
                       var product =  await _productClient.GetProductByIdAsync(new GetProductByIdRequest()
                             {ProductId = basketItem.ProductId});
 
-                      basketResponse.BasketItems.Add(new BasketItemResponse() { Name = product.Name, Description = product.Description, Price =  product.Price, Quantity = basketItem.Quantity, ProductId = product.Id});
+                      basketResponse.BasketItems.Add(new BasketItemResponse() { Name = product.Name, Description = product.Description, Price =  product.Price, PriceCurrency = product.PriceCurrency, Quantity = basketItem.Quantity, ProductId = product.Id});
                     }
                 }
             }

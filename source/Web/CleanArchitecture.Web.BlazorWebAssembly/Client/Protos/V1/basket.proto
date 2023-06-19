@@ -55,6 +55,7 @@ message BasketItemResponse {
   string description = 3;
   int32 quantity = 4;
   customTypes.DecimalValue price = 5;
+  string priceCurrency = 6;
 }
 message UpdateQuantityRequest {
 	string productId = 1;

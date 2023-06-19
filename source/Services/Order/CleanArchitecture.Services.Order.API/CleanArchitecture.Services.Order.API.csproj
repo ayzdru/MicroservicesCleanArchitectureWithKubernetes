@@ -63,7 +63,6 @@
   <ItemGroup>
     <Protobuf Include="Protos\V1\order.proto" GrpcServices="Server" />
 	  <Protobuf Include="Protos\V1\basket.proto" GrpcServices="Client" />
-	  <Protobuf Include="Protos\V1\product.proto" GrpcServices="Client" />
 	  <Protobuf Include="Protos\customTypes.proto" GrpcServices="Client" />
   </ItemGroup>
 	<ItemGroup>

@@ -13,11 +13,12 @@ public class IdentityDbContextInitialiser
 {
     private readonly ILogger<IdentityDbContextInitialiser> _logger;
     private readonly IdentityDbContext _context;
-
-    public IdentityDbContextInitialiser(ILogger<IdentityDbContextInitialiser> logger, IdentityDbContext context)
+    private readonly UserManager<IdentityUser> _userManager;
+    public IdentityDbContextInitialiser(ILogger<IdentityDbContextInitialiser> logger, IdentityDbContext context, UserManager<IdentityUser> userManager)
     {
         _logger = logger;
         _context = context;
+        _userManager = userManager;
     }
 
     public async Task InitialiseAsync()
@@ -37,7 +38,12 @@ public class IdentityDbContextInitialiser
     {
         try
         {
-            
+            var administrator = new IdentityUser { UserName = "administrator@localhost", Email = "administrator@localhost", EmailConfirmed = true, PhoneNumberConfirmed = true };
+
+            if (_userManager.Users.All(u => u.UserName != administrator.UserName))
+            {
+                await _userManager.CreateAsync(administrator, "Password1@!");               
+            }
         }
         catch (Exception ex)
         {

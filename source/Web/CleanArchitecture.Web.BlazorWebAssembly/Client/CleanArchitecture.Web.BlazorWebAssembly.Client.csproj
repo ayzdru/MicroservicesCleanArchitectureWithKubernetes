@@ -17,10 +17,10 @@
 	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.7" />
 	  <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
 	  <PackageReference Include="System.Net.Http.Json" Version="7.0.1" />
-	  <PackageReference Include="Google.Protobuf" Version="3.23.2" />
+	  <PackageReference Include="Google.Protobuf" Version="3.23.3" />
 	  <PackageReference Include="Grpc.Tools" Version="2.54.0" PrivateAssets="All" />
-	  <PackageReference Include="Grpc.Net.Client" Version="2.53.0" />
-	  <PackageReference Include="Grpc.Net.Client.Web" Version="2.53.0" />
+	  <PackageReference Include="Grpc.Net.Client" Version="2.54.0" />
+	  <PackageReference Include="Grpc.Net.Client.Web" Version="2.54.0" />
   </ItemGroup>
 	<ItemGroup>
 		<Protobuf Include="Protos\customTypes.proto" GrpcServices="Client" />

@@ -19,6 +19,7 @@ namespace CleanArchitecture.Services.Order.Core.Entities
         {
             Id = id;
         }
+
         public void AddOrderItem(OrderItem orderItem)
         {
             _orderItems.Add(orderItem);

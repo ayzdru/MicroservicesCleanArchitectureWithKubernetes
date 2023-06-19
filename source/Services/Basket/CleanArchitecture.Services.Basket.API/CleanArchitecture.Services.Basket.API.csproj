@@ -12,11 +12,11 @@
 
 	  <PackageReference Include="AspNetCore.HealthChecks.OpenIdConnectServer" Version="6.0.2" />
 	  <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="6.0.4" />	  
-	  <PackageReference Include="Google.Protobuf" Version="3.23.2" />	  
-	  <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.53.0" />
-	  <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.53.0" />
-	  <PackageReference Include="Grpc.AspNetCore.Web" Version="2.53.0" />
-	  <PackageReference Include="Grpc.Net.Client" Version="2.53.0" />
+	  <PackageReference Include="Google.Protobuf" Version="3.23.3" />	  
+	  <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.54.0" />
+	  <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.54.0" />
+	  <PackageReference Include="Grpc.AspNetCore.Web" Version="2.54.0" />
+	  <PackageReference Include="Grpc.Net.Client" Version="2.54.0" />
 	  <PackageReference Include="Grpc.Tools" Version="2.54.0">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -35,7 +35,7 @@
 	  <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.5.0" />
 	  <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.0.0-rc9.8" />
 	  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.31.0" />
-	  <PackageReference Include="Grpc.AspNetCore" Version="2.53.0" />
+	  <PackageReference Include="Grpc.AspNetCore" Version="2.54.0" />
   </ItemGroup>
   <ItemGroup>	 
     <Protobuf Include="Protos\customTypes.proto" GrpcServices="Client" />	 
