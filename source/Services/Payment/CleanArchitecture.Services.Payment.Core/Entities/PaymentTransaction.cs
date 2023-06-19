@@ -11,10 +11,13 @@ namespace CleanArchitecture.Services.Payment.Core.Entities
     {       
         public Payment Payment { get; private set; }
         public Guid PaymentId { get; private set; }
-        public Money Amount { get; private set; }
-        public PaymentTransaction(Payment payment, Guid paymentId, Money amount)
+        public Money Amount { get; set; }
+        public PaymentTransaction(Guid paymentId)
         {
-            Payment = payment;
+            PaymentId = paymentId;
+        }
+        public PaymentTransaction(Guid paymentId, Money amount)
+        {
             PaymentId = paymentId;
             Amount = amount;
         }

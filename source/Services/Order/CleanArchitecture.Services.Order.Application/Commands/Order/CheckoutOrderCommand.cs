@@ -51,15 +51,15 @@ namespace CleanArchitecture.Services.Order.Application.Commands
                             var username = await _currentUserService.GetUserNameAsync(_currentUserService.UserId.Value);
                             _orderDbContext.Users.Add(new User(_currentUserService.UserId.Value, username, username));
                         }
-                        var newOrder = _orderDbContext.Orders.Add(new Core.Entities.Order(Guid.NewGuid(), new Money(request.BasketItems.Sum(q => q.Price * q.Quantity), Currency.USD)));
+                        var newOrder = _orderDbContext.Orders.Add(new Core.Entities.Order(Guid.NewGuid(), new Money(request.BasketItems.Sum(q => q.Price * q.Quantity), Enums.Currencies.USD.ToString())));
                         foreach (var basketItem in request.BasketItems)
                         {
                             var product = _orderDbContext.Products.Where(q => q.Id == basketItem.ProductId).SingleOrDefault();
                             if (product == null)
                             {
-                                _orderDbContext.Products.Add(new Product(basketItem.ProductId, basketItem.Name, basketItem.Description, new Money(basketItem.Price, Currency.USD)));
+                                _orderDbContext.Products.Add(new Product(basketItem.ProductId, basketItem.Name, basketItem.Description, new Money(basketItem.Price, Enums.Currencies.USD.ToString())));
                             }
-                            newOrder.Entity.AddOrderItem(new OrderItem(Guid.NewGuid(), basketItem.ProductId, basketItem.Quantity, new Money(basketItem.Price * basketItem.Quantity, Currency.USD)));
+                            newOrder.Entity.AddOrderItem(new OrderItem(Guid.NewGuid(), basketItem.ProductId, basketItem.Quantity, new Money(basketItem.Price * basketItem.Quantity, Enums.Currencies.USD.ToString())));
                         }
 
                         await _capBus.PublishAsync("OrderAdded", newOrder.Entity.Id);

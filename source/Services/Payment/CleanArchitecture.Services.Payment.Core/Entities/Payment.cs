@@ -9,13 +9,13 @@ namespace CleanArchitecture.Services.Payment.Core.Entities
     {
         public Order Order { get; private set; }
         public Guid OrderId { get; private set; }      
-
+      
+        private readonly List<PaymentTransaction> _paymentTransactions = new List<PaymentTransaction>();
+        public IReadOnlyCollection<PaymentTransaction> PaymentTransactions => _paymentTransactions.AsReadOnly();
         public Payment(Guid id, Guid orderId)
         {
             Id = id;
             OrderId = orderId;
         }
-        private readonly List<PaymentTransaction> _paymentTransactions = new List<PaymentTransaction>();
-        public IReadOnlyCollection<PaymentTransaction> PaymentTransactions => _paymentTransactions.AsReadOnly();
     }
 }

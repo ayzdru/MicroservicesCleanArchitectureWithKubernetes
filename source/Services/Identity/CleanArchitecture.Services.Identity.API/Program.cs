@@ -52,7 +52,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoleManager<IdentityRole>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<IdentityDbContext>();
 
 builder.Services.AddIdentityServer(options =>

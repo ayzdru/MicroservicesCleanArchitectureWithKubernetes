@@ -16,16 +16,16 @@ namespace CleanArchitecture.Services.Payment.Infrastructure.Data.Configurations
         {
             base.Configure(builder);
             builder.OwnsOne(
-    o => o.TotalAmount,
-    sa =>
-    {
-        sa.Property(p => p.Amount).HasColumnName(nameof(Money.Amount)).IsRequired(Constants.Money.AmountRequired);
-        sa.OwnsOne(c => c.Currency, ca =>
-        {
-            ca.Property(p=> p.Symbol).HasColumnName(nameof(Currency.Symbol)).HasMaxLength(Constants.Currency.SymbolMaximumLength).IsRequired(Constants.Currency.SymbolRequired);
-            ca.Property(p=> p.Name).HasColumnName(nameof(Currency.Name)).HasMaxLength(Constants.Currency.NameMaximumLength).IsRequired(Constants.Currency.NameRequired);
-        });
-    });
+     o => o.TotalAmount,
+     sa =>
+     {
+         sa.Property(p => p.Amount).HasColumnName(nameof(Order.TotalAmount)).IsRequired(Constants.Order.TotalAmountRequired);
+         sa.Property(p => p.Currency).HasColumnName(nameof(Order.TotalAmount) + nameof(Money.Currency)).HasMaxLength(Constants.Money.CurrencyMaximumLength).IsRequired(Constants.Order.TotalAmountRequired);
+
+     });
+            builder.Navigation(o => o.TotalAmount)
+                  .IsRequired(Constants.Order.TotalAmountRequired);
         }
     }
 }
+

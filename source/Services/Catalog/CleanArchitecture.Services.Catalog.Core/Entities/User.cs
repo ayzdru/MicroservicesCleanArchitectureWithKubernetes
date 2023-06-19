@@ -15,6 +15,10 @@ namespace CleanArchitecture.Services.Catalog.Core.Entities
             UserName = userName;
             Email = email;
         }
+        public User()
+        {
+                
+        }
 
     }
 }

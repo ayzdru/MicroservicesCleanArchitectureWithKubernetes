@@ -10,7 +10,6 @@ namespace CleanArchitecture.Services.Payment.Core.Models
     {
         public Guid OrderId { get; set; }
         public decimal TotalAmount { get; set; }
-        public string CurrencyName { get; }
-        public string CurrencySymbol { get; }
+        public string Currency { get; set; }
     }
 }

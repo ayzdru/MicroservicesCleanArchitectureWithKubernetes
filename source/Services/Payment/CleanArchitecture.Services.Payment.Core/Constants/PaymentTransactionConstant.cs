@@ -8,5 +8,6 @@ public partial class Constants
     {
 
         public const bool PaymentIdRequired = true;
+        public const bool AmountRequired = true;
     }
 }

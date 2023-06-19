@@ -32,7 +32,7 @@ namespace CleanArchitecture.Services.Payment.Application.Commands
             }
             public async Task<int> Handle(CreateSubscriberOrderCommand request, CancellationToken cancellationToken)
             {
-                _paymentDbContext.Orders.Add(new Order(request.SubscriberOrder.OrderId, new Money(request.SubscriberOrder.TotalAmount, new Currency(request.SubscriberOrder.CurrencyName, request.SubscriberOrder.CurrencySymbol))));                    
+                _paymentDbContext.Orders.Add(new Order(request.SubscriberOrder.OrderId, new Money(request.SubscriberOrder.TotalAmount, Enums.Currencies.USD.ToString())));                    
                 var affected = await _paymentDbContext.SaveChangesAsync(cancellationToken);
                 await _mediator.Publish(new CreateSubscriberOrderNotification { SubscriberOrder = request.SubscriberOrder }, cancellationToken);
                 return affected;

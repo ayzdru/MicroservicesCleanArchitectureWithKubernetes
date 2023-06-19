@@ -19,13 +19,12 @@ namespace CleanArchitecture.Services.Payment.Infrastructure.Data.Configurations
     o => o.Amount,
     sa =>
     {
-        sa.Property(p => p.Amount).HasColumnName(nameof(Money.Amount)).IsRequired(Constants.Money.AmountRequired);
-        sa.OwnsOne(c => c.Currency, ca =>
-        {
-            ca.Property(p=> p.Symbol).HasColumnName(nameof(Currency.Symbol)).HasMaxLength(Constants.Currency.SymbolMaximumLength).IsRequired(Constants.Currency.SymbolRequired);
-            ca.Property(p=> p.Name).HasColumnName(nameof(Currency.Name)).HasMaxLength(Constants.Currency.NameMaximumLength).IsRequired(Constants.Currency.NameRequired);
-        });
+        sa.Property(p => p.Amount).HasColumnName(nameof(PaymentTransaction.Amount)).IsRequired(Constants.PaymentTransaction.AmountRequired);
+        sa.Property(p => p.Currency).HasColumnName(nameof(PaymentTransaction.Amount) + nameof(Money.Currency)).HasMaxLength(Constants.Money.CurrencyMaximumLength).IsRequired(Constants.PaymentTransaction.AmountRequired);
+
     });
+            builder.Navigation(o => o.Amount)
+                 .IsRequired(Constants.PaymentTransaction.AmountRequired);
         }
     }
 }

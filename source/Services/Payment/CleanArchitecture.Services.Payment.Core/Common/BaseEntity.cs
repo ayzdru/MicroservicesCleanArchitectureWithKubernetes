@@ -1,6 +1,7 @@
 ﻿using CleanArchitecture.Services.Payment.Core.Entities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
@@ -15,7 +16,8 @@ namespace CleanArchitecture.Services.Payment.Core
         public User LastModifiedByUser { get; protected set; }
         public Guid? LastModifiedByUserId { get; protected set; }
         public DateTime? LastModified { get; protected set; }
-        public byte[] RowVersion { get; protected set; }
+        [Timestamp]
+        public uint RowVersion { get; protected set; }
         public void Create(Guid? createdByUserId)
         {
             CreatedByUserId = createdByUserId;

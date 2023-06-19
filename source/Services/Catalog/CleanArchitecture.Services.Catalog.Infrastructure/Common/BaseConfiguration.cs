@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace CleanArchitecture.Services.Catalog.Infrastructure.Common
@@ -14,6 +16,10 @@ namespace CleanArchitecture.Services.Catalog.Infrastructure.Common
             builder.HasKey(b => b.Id);
             builder.Property(b => b.Id).ValueGeneratedOnAdd();
             builder.Property(p => p.RowVersion).IsRowVersion();
+
+            builder.HasOne(q => q.CreatedByUser).WithMany().HasForeignKey(p => p.CreatedByUserId).IsRequired(false);
+            builder.HasOne(q => q.LastModifiedByUser).WithMany().HasForeignKey(p => p.LastModifiedByUserId).IsRequired(false);
+
         }
     }
 }

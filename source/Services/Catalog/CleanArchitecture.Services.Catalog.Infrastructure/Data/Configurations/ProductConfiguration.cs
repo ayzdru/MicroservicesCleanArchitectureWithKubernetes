@@ -20,13 +20,8 @@ namespace CleanArchitecture.Services.Catalog.Infrastructure.Data.Configurations
   o => o.Price,
   sa =>
   {
-      sa.Property(p => p.Amount).HasColumnName(nameof(Money.Amount)).IsRequired(Constants.Product.PriceRequired);
-      sa.OwnsOne(c => c.Currency, ca =>
-      {
-          ca.Property(p => p.Symbol).HasColumnName(nameof(Currency.Symbol)).HasMaxLength(Constants.Currency.SymbolMaximumLength).IsRequired(Constants.Product.PriceRequired);
-          ca.Property(p => p.Name).HasColumnName(nameof(Currency.Name)).HasMaxLength(Constants.Currency.NameMaximumLength).IsRequired(Constants.Product.PriceRequired);
-      });
-      sa.Navigation(q => q.Currency).IsRequired(Constants.Product.PriceRequired);
+      sa.Property(p => p.Amount).HasColumnName(nameof(Product.Price)).IsRequired(Constants.Product.PriceRequired);
+      sa.Property(p => p.Currency).HasColumnName(nameof(Product.Price) + nameof(Money.Currency)).HasMaxLength(Constants.Money.CurrencyMaximumLength).IsRequired(Constants.Product.PriceRequired);
   });
             builder.Navigation(o => o.Price)
                   .IsRequired(Constants.Product.PriceRequired);

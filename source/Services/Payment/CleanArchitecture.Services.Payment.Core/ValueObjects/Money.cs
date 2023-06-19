@@ -7,24 +7,32 @@ using System.Threading.Tasks;
 
 namespace CleanArchitecture.Services.Payment.Core.ValueObjects
 {
+    
     public class Money : ValueObject
     {
-        public Money(decimal amount, Currency currency)
+        public Money(decimal amount, string currency)
         {
             ArgumentNullException.ThrowIfNull(amount);
             ArgumentNullException.ThrowIfNull(currency);
             Amount = amount;
             Currency = currency;
+        }   
+        private Money()
+        {
+        }
+        public Money(decimal amount)
+        {
+            Amount = amount;
         }
 
-        public decimal Amount { get; private set; }
-        public Currency Currency { get; private set; }
+        public decimal Amount { get; set; }
+        public string Currency { get; set; }
 
         public override string ToString() => $"{Amount}{Currency}";
 
-        public static Money Zero(Currency currency)
+        public static Money Zero(Enums.Currencies currency)
         {
-            return new Money(0, currency);
+            return new Money(0, currency.ToString());
         }
 
         public static bool operator <(Money obj1, Money obj2)
