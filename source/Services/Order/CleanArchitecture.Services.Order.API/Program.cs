@@ -139,8 +139,6 @@ builder.Services.AddCap(x =>
     x.FailedMessageExpiredAfter = int.MaxValue;
 });
 
-builder.Services.AddHttpContextAccessor();
-
 
 var basketUrl = builder.Configuration.GetValue<string>("BasketUrl");
 

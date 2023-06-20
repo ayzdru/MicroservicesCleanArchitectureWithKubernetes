@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CleanArchitecture.Services.Payment.Core.Models
+namespace CleanArchitecture.Services.Order.Core.Models
 {
     public class SubscriberOrderModel
     {

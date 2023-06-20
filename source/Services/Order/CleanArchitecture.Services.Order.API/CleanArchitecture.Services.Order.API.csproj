@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <PackageReference Include="IdentityModel" Version="6.1.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.3.7" />
 	  <PackageReference Include="Confluent.Kafka.Extensions.OpenTelemetry" Version="0.2.0" />
 	  <PackageReference Include="DotNetCore.CAP" Version="7.1.4" />

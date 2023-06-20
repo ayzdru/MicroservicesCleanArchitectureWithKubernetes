@@ -10,10 +10,15 @@ namespace CleanArchitecture.Services.Payment.Core.ValueObjects
     
     public class Money : ValueObject
     {
+        private readonly List<string> _supportedCurrencies = new List<string> { Enums.Currencies.USD.ToString() };
         public Money(decimal amount, string currency)
         {
             ArgumentNullException.ThrowIfNull(amount);
             ArgumentNullException.ThrowIfNull(currency);
+            if(_supportedCurrencies.Contains(currency) == false)
+            {
+                throw new CurrencyIsNotValidException();
+            }
             Amount = amount;
             Currency = currency;
         }   

@@ -62,7 +62,7 @@ namespace CleanArchitecture.Services.Order.Application.Commands
                             newOrder.Entity.AddOrderItem(new OrderItem(Guid.NewGuid(), basketItem.ProductId, basketItem.Quantity, new Money(basketItem.Price * basketItem.Quantity, Enums.Currencies.USD.ToString())));
                         }
 
-                        await _capBus.PublishAsync("OrderAdded", newOrder.Entity.Id);
+                        await _capBus.PublishAsync("OrderAdded", new SubscriberOrderModel() { OrderId = newOrder.Entity.Id, TotalAmount = newOrder.Entity.TotalAmount.Amount, TotalAmountCurrency =  newOrder.Entity.TotalAmount.Currency });
                         await _orderDbContext.SaveChangesAsync();
                         await transaction.CommitAsync();
                         return true;

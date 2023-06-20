@@ -10,7 +10,7 @@ namespace CleanArchitecture.Services.Payment.Application.Commands
     {
         public CreateSubscriberOrderCommandValidator()
         {
-            RuleFor(v => v.SubscriberOrder.Currency).MaximumLength(Constants.Money.CurrencyMaximumLength).MinimumLength(Constants.Money.CurrencyMinimumLength).NotEmpty();
+            RuleFor(v => v.SubscriberOrder.TotalAmountCurrency).MaximumLength(Constants.Money.CurrencyMaximumLength).MinimumLength(Constants.Money.CurrencyMinimumLength).NotEmpty();
             RuleFor(v => v.SubscriberOrder.TotalAmount).GreaterThan(0);
         }
     }

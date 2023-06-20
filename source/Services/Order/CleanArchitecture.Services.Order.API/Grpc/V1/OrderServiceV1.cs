@@ -35,7 +35,10 @@ namespace CleanArchitecture.Services.Order.API.Grpc.V1
             {
                 status.Value = await _mediator.Send(new CheckoutOrderCommand(basketsResponse.BasketItems.Select(q=> new BasketItemModel(Guid.Parse(q.ProductId),q.Name, q.Description, q.Quantity, q.Price)).ToList()));
             }               
-            
+            if(status.Value == true)
+            {
+                await _basketClient.ClearBasketAsync(new Empty());
+            }
             return await Task.FromResult(status);
         }
 
