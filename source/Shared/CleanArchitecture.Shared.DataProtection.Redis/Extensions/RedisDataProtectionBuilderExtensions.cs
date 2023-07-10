@@ -50,10 +50,11 @@ namespace CleanArchitecture.Shared.DataProtection.Redis
                     kek.StringSet(RedisConnections.KeyEncryptionKeyRedisKey + RedisConnections.KeySuffix, kekInfo.Key);
                     kek.StringSet(RedisConnections.KeyEncryptionKeyRedisKey + RedisConnections.IVSuffix, kekInfo.IV);
 
+                    var kekProvider = RedisConnections.GetKekAesProvider();
                     var dekInfo = AesProvider.GenerateKey(AesKeySize.AES256Bits);
                     var dek = RedisConnections.DekRedisConnection.GetDatabase();
-                    dek.StringSet(RedisConnections.DataEncryptionKeyRedisKey + RedisConnections.KeySuffix, dekInfo.Key);
-                    dek.StringSet(RedisConnections.DataEncryptionKeyRedisKey + RedisConnections.IVSuffix, dekInfo.IV);
+                    dek.StringSet(RedisConnections.DataEncryptionKeyRedisKey + RedisConnections.KeySuffix, kekProvider.Encrypt(dekInfo.Key));
+                    dek.StringSet(RedisConnections.DataEncryptionKeyRedisKey + RedisConnections.IVSuffix, kekProvider.Encrypt(dekInfo.IV));
                 }
             }
             catch 
