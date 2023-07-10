@@ -21,5 +21,6 @@ CQRS
 
 [Kubernetes ile ASP.Net Core Microservices Clean Architecture - Observability, APM, Tracing, Logging, Metric, Open Telemetry ve SigNoz - Bölüm 2](https://www.ayazduru.com.tr/blog/post/2023/06/25/kubernetes-ile-asp-net-core-microservices-clean-architecture-observability-apm-tracing-logging-metric-open-telemetry-ve-signoz-bolum-2)
 
+[Kubernetes ile ASP.Net Core Microservices Clean Architecture - PostgreSQL, pgAdmin, Kubegres, High Availability ve Disaster recovery (HA/DR) - Bölüm 3](https://www.ayazduru.com.tr/blog/post/2023/06/28/kubernetes-ile-asp-net-core-microservices-clean-architecture-postgresql-pgadmin-kubegres-high-availability-ve-disaster-recovery-ha-dr-bolum-3)
 
 
