@@ -3,7 +3,7 @@
     {
       "DownstreamPathTemplate": "/v1/{everything}",
       "DownstreamScheme": "https",
-      "UpstreamPathTemplate": "/v1/{everything}",
+      "UpstreamPathTemplate": "/catalog/v1/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Patch", "Put", "Delete" ],
       "SwaggerKey": "Catalog",
       "ServiceName": "Catalog"
@@ -11,7 +11,7 @@
     {
       "DownstreamPathTemplate": "/v1/{everything}",
       "DownstreamScheme": "https",
-      "UpstreamPathTemplate": "/v1/{everything}",
+      "UpstreamPathTemplate": "/order/v1/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Patch", "Put", "Delete" ],
       "SwaggerKey": "Order",
       "ServiceName": "Order"
@@ -19,7 +19,7 @@
     {
       "DownstreamPathTemplate": "/v1/{everything}",
       "DownstreamScheme": "https",
-      "UpstreamPathTemplate": "/v1/{everything}",
+      "UpstreamPathTemplate": "/payment/v1/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Patch", "Put", "Delete" ],
       "SwaggerKey": "Payment",
       "ServiceName": "Payment"
@@ -69,7 +69,7 @@
   "GlobalConfiguration": {
     "ServiceDiscoveryProvider": {
       "Scheme": "http",
-      "Host": "consul-server.consul",
+      "Host": "127.0.0.1",
       "Port": 8500,
       "Type": "Consul"
     }

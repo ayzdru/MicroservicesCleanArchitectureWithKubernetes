@@ -10,11 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Grpc\order.proto" />
-    <None Remove="Protos\customTypes.proto" />
-  </ItemGroup>
-
-  <ItemGroup>
+	  <PackageReference Include="Consul.AspNetCore" Version="1.6.10.9" />
 	  <PackageReference Include="IdentityModel" Version="6.1.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.Grpc.Swagger" Version="0.3.7" />
 	  <PackageReference Include="Confluent.Kafka.Extensions.OpenTelemetry" Version="0.2.0" />

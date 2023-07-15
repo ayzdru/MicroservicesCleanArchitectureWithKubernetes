@@ -40,7 +40,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using CleanArchitecture.Services.Catalog.Infrastructure.IoC;
-
+using Consul.AspNetCore;
 
 ServicePointManager.ServerCertificateValidationCallback +=
               (sender, cert, chain, sslPolicyErrors) => true;
@@ -48,6 +48,16 @@ IdentityModelEventSource.ShowPII = true;
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
+var serviceName = builder.Configuration.GetValue<string>("ServiceName");
+builder.Services.AddConsul(serviceName, options =>
+{
+    options.Address = new Uri(builder.Configuration.GetValue<string>("Consul"));
+}).AddConsulDynamicServiceRegistration(options =>
+{
+    options.ID = serviceName;
+    options.Name = serviceName;
+});
+
 builder.Services.AddGrpcHealthChecks();
 var healthChecks = builder.Services.AddAllHealthChecks();
 
@@ -143,8 +153,6 @@ builder.Services.AddCap(x =>
     x.FailedRetryCount = 5;
     x.FailedMessageExpiredAfter = int.MaxValue;
 });
-
-var serviceName = builder.Configuration.GetValue<string>("ServiceName");
 var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
 var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
 var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");

@@ -1,3 +1,7 @@
+using Consul;
+using Consul.AspNetCore;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
 using Ocelot.DependencyInjection;
@@ -6,65 +10,40 @@ using Ocelot.Provider.Consul;
 using Ocelot.Values;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("ocelot.json");
+builder.Configuration.AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json");
+var serviceName = builder.Configuration.GetValue<string>("ServiceName");
+var server = builder.Services.BuildServiceProvider().GetService<IServer>();
 
+var addresses = server?.Features.Get<IServerAddressesFeature>().Addresses;
+
+builder.Services.AddConsul(serviceName, options =>
+{
+    options.Address = new Uri(builder.Configuration.GetValue<string>("Consul"));
+}).AddConsulDynamicServiceRegistration(options =>
+{
+    options.ID = serviceName;
+    options.Name = serviceName;
+});
 builder.Services.AddOcelot().AddConsul();
-builder.Services.AddSwaggerForOcelot(builder.Configuration,
-  (o) =>
-  {
-      o.GenerateDocsDocsForGatewayItSelf(opt =>
-      {
-          opt.FilePathsForXmlComments = new string[] { "WebApiGateway.xml" };
-          opt.GatewayDocsTitle = "Web ApiGateway";
-          opt.GatewayDocsOpenApiInfo = new()
-          {
-              Title = "Web ApiGateway",
-              Version = "v1",
-          };
-
-          opt.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-          {
-              Type = SecuritySchemeType.OAuth2,
-              Flows = new OpenApiOAuthFlows
-              {
-                  AuthorizationCode = new OpenApiOAuthFlow
-                  {
-                      AuthorizationUrl = new Uri("http://identity" + "/connect/authorize"),
-                      TokenUrl = new Uri("http://identity" + "/connect/token"),
-                      Scopes = new Dictionary<string, string>
-                                {
-                                    { "catalog", "Access read/write operations" },
-                                    { "payment", "Access read/write operations" },
-                                    { "order", "Access read/write operations" }
-                                }
-                  }
-              }
-          });
-          opt.AddSecurityRequirement(new OpenApiSecurityRequirement
-                    {
-                        {
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
-                            },
-                            new[] { "catalog", "payment", "order"}
-                        }
-                    });
-      });
-  });
-
+builder.Services.AddControllers();
+builder.Services.AddSwaggerForOcelot(builder.Configuration);
 var app = builder.Build();
+app.MapControllers();
+app.MapGet("/", async (IConsulClient consulClient) =>
+{
+    var allRegisteredServices = await consulClient.Agent.Services();
+    return string.Join(",", allRegisteredServices.Response?.Select(x => x.Value.Service + " - (" + x.Value.Address + ")").ToList());
+});
 
-
-app.UseHttpsRedirection();
-
+app.UsePathBase("/gateway");
+app.UseStaticFiles();
 app.UseSwaggerForOcelotUI(opt =>
 {
+    opt.DownstreamSwaggerEndPointBasePath = "/gateway/swagger/docs";
     opt.PathToSwaggerGenerator = "/swagger/docs";
-});
-app.MapGet("/", () =>
-{
-    return "ApiGateway Web";
-});
-await app.UseOcelot();
+})
+            .UseOcelot()
+            .Wait();
 app.Run();
 
