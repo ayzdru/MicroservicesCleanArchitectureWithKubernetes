@@ -1,0 +1,4 @@
+global:
+  env: 
+    "ASPNETCORE_ENVIRONMENT": "Production"
+    "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true"

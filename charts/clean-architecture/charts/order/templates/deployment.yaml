@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      initContainers:
+      - name: "order-database-migration-init"
+        image: "groundnuty/k8s-wait-for:v2.0"
+        imagePullPolicy: IfNotPresent
+        args: 
+        - "job"
+        - "order-database-migration-job"
+      containers:
+      - name: order
+        image: dockerprivateregistry.local/order:latest
+        startupProbe:
+          httpGet:
+            path: /health/startup
+            port: 80
+          failureThreshold: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health/liveness
+            port: 80
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/readiness
+            port: 80
+          successThreshold: 3       
+        env:
+        {{ range $k, $v := .Values.global.env }}
+          - name: {{ $k | quote }}
+            value: {{ $v | quote }}
+        {{- end }}

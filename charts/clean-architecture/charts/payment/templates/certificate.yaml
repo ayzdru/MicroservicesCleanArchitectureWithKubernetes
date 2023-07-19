@@ -1,0 +1,26 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: payment-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: payment-ca
+  secretName: payment-ca
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  dnsNames:
+  - blazorwebassembly.local
+  issuerRef:
+    name: selfsigned-cluster-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: payment-cluster-issuer  
+spec:
+  ca:
+    secretName: payment-ca

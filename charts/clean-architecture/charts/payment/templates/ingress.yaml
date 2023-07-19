@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: payment-cluster-issuer
+  name: payment-ingress
+spec:
+  rules:
+  - host: payment.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: payment-service
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - payment.local
+    secretName: payment-tls

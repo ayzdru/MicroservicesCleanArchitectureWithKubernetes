@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: order-cluster-issuer
+  name: order-ingress
+spec:
+  rules:
+  - host: order.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: order-service
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - order.local
+    secretName: order-tls
