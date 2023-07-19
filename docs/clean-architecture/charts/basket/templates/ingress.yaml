@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: basket-cluster-issuer
+  name: basket-ingress
+spec:
+  rules:
+  - host: basket.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: basket-service
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - basket.local
+    secretName: basket-tls

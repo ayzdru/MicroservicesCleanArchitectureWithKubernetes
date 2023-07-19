@@ -7,7 +7,7 @@ metadata:
   name: blazor-webassembly-ingress
 spec:
   rules:
-  - host: signozdashboard.local
+  - host: blazorwebassembly.local
     http:
       paths:
       - pathType: Prefix

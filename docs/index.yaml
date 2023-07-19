@@ -3,12 +3,12 @@ entries:
   clean-architecture:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2023-07-19T06:14:57.606799089+03:00"
+    created: "2023-07-19T08:12:37.057816498+03:00"
     description: A Helm chart for Kubernetes
-    digest: 43d5473ccab58c42ac1d2dc08d6693775d39c0420f28f1b0df237f3891c97930
+    digest: 1a0c89e13f8215b2bd65688ae128b82b1259bea6014640c6043c03a3e6917832
     name: clean-architecture
     type: application
     urls:
-    - https://ayzdru.github.io/MicroservicesCleanArchitectureWithKubernetes/charts/clean-architecture-0.1.0.tgz
+    - https://ayzdru.github.io/MicroservicesCleanArchitectureWithKubernetes/clean-architecture-0.1.0.tgz
     version: 0.1.0
-generated: "2023-07-19T06:14:57.605241175+03:00"
+generated: "2023-07-19T08:12:37.0564751+03:00"
