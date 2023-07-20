@@ -13,4 +13,8 @@
 	  <PackageReference Include="Consul.AspNetCore" Version="1.6.10.9" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\CleanArchitecture.Shared.HealthChecks\CleanArchitecture.Shared.HealthChecks.csproj" />
+  </ItemGroup>
+
 </Project>

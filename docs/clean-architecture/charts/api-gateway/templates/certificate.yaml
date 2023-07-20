@@ -1,17 +1,17 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: order-ca
+  name: api-gateway-ca
   namespace: cert-manager
 spec:
   isCA: true
-  commonName: order-ca
-  secretName: order-ca
+  commonName: api-gateway-ca
+  secretName: api-gateway-ca
   privateKey:
     algorithm: ECDSA
     size: 256
   dnsNames:
-  - order-service.clean-architecture
+  - api-gateway-service.clean-architecture
   issuerRef:
     name: selfsigned-cluster-issuer
     kind: ClusterIssuer
@@ -20,7 +20,7 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: order-cluster-issuer  
+  name: api-gateway-cluster-issuer  
 spec:
   ca:
-    secretName: order-ca
+    secretName: api-gateway-ca

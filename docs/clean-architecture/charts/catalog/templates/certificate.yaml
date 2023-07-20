@@ -11,7 +11,7 @@ spec:
     algorithm: ECDSA
     size: 256
   dnsNames:
-  - blazorwebassembly.local
+  - catalog-service.clean-architecture
   issuerRef:
     name: selfsigned-cluster-issuer
     kind: ClusterIssuer

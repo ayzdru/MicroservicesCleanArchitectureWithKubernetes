@@ -2,3 +2,7 @@ global:
   env: 
     "ASPNETCORE_ENVIRONMENT": "Production"
     "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true"
+    "DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE": "false"
+    "ASPNETCORE_URLS": "https://+:443;http://+:80"
+    "ASPNETCORE_Kestrel__Certificates__Default__Path": "/https/aspnetapp.pfx"
+    "ASPNETCORE_Kestrel__Certificates__Default__Password": "Password1"

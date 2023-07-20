@@ -21,22 +21,22 @@ namespace CleanArchitecture.Services.Identity.Infrastructure.IoC
 {
     public static class ConfigureServicesDependencyInjection
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, string connectionString)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, string connectionString, bool databaseMigration = false)
         {
             services.AddDbContext<IdentityDbContext>(options =>
             {
                 options.UseNpgsql(connectionString);
-                options.UseTriggers(triggerOptions =>
+                if (databaseMigration == false)
                 {
-                    triggerOptions.AddTrigger<UserTriggerService>();
-                });
+                    options.UseTriggers(triggerOptions =>
+                    {
+                        triggerOptions.AddTrigger<UserTriggerService>();
+                    });
+                }
             });
             services.AddScoped<EntitySaveChangesInterceptor>();
             services.AddScoped<IIdentityDbContext>(provider => provider.GetService<IdentityDbContext>());
-            if (webHostEnvironment.IsDevelopment())
-            {
-                services.AddScoped<IdentityDbContextInitialiser>();
-            }
+            services.AddScoped<IdentityDbContextInitialiser>();
             services.AddApplication();
             return services;
         }

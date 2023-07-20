@@ -3,6 +3,10 @@ kind: Deployment
 metadata:
   name: basket-deployment
 spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basket
   template:
     metadata:
       labels:
@@ -11,6 +15,7 @@ spec:
       containers:
       - name: basket
         image: dockerprivateregistry.local/basket:latest
+        imagePullPolicy: Always
         startupProbe:
           httpGet:
             path: /health/startup

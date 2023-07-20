@@ -2,22 +2,22 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    cert-manager.io/cluster-issuer: identity-cluster-issuer
-  name: identity-ingress
+    cert-manager.io/cluster-issuer: api-gateway-cluster-issuer
+  name: api-gateway-ingress
 spec:
   ingressClassName: nginx
   rules:
-  - host: identity-service.clean-architecture
+  - host: api-gateway-service.clean-architecture
     http:
       paths:
       - pathType: Prefix
         path: /
         backend:
           service:
-            name: identity-service
+            name: api-gateway-service
             port:
               number: 80
   tls:
   - hosts:
-    - identity-service.clean-architecture
-    secretName: identity-tls
+    - api-gateway-service.clean-architecture
+    secretName: api-gateway-tls

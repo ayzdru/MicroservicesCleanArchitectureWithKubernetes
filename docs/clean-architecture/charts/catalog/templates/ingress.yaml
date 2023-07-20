@@ -2,12 +2,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    kubernetes.io/ingress.class: nginx
     cert-manager.io/cluster-issuer: catalog-cluster-issuer
   name: catalog-ingress
 spec:
+  ingressClassName: nginx
   rules:
-  - host: catalog.local
+  - host: catalog-service.clean-architecture
     http:
       paths:
       - pathType: Prefix
@@ -19,5 +19,5 @@ spec:
               number: 80
   tls:
   - hosts:
-    - catalog.local
+    - catalog-service.clean-architecture
     secretName: catalog-tls

@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: catalog-service
+  name: api-gateway-service
   labels:
-    app: catalog
+    app: api-gateway
 spec:
   type: ClusterIP
   ports:
@@ -16,4 +16,4 @@ spec:
       targetPort: 443
       protocol: TCP  
   selector:
-    app: catalog
+    app: api-gateway

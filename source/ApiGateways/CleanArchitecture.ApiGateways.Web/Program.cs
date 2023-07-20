@@ -8,15 +8,20 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
 using Ocelot.Values;
+using CleanArchitecture.Shared.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddAllHealthChecks();
 builder.Configuration.AddJsonFile("ocelot.json");
-builder.Configuration.AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json");
+if (builder.Environment.IsProduction() == false)
+{
+    builder.Configuration.AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json");
+}
 var serviceName = builder.Configuration.GetValue<string>("ServiceName");
 var server = builder.Services.BuildServiceProvider().GetService<IServer>();
 
 var addresses = server?.Features.Get<IServerAddressesFeature>().Addresses;
-
+builder.Services.AddResponseCompression();
 builder.Services.AddConsul(serviceName, options =>
 {
     options.Address = new Uri(builder.Configuration.GetValue<string>("Consul"));
@@ -34,8 +39,9 @@ app.MapGet("/", async (IConsulClient consulClient) =>
 {
     var allRegisteredServices = await consulClient.Agent.Services();
     return string.Join(",", allRegisteredServices.Response?.Select(x => x.Value.Service + " - (" + x.Value.Address + ")").ToList());
-});
-
+}); 
+app.UseResponseCompression();
+app.UseAllHealthChecks();
 app.UsePathBase("/gateway");
 app.UseStaticFiles();
 app.UseSwaggerForOcelotUI(opt =>

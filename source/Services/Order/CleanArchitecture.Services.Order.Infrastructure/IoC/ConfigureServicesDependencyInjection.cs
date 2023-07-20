@@ -28,10 +28,7 @@ namespace CleanArchitecture.Services.Order.Infrastructure.IoC
                    options.UseNpgsql(connectionString));
             services.AddScoped<EntitySaveChangesInterceptor>();
             services.AddScoped<IOrderDbContext>(provider => provider.GetService<OrderDbContext>());
-            if (webHostEnvironment.IsDevelopment())
-            {
-                services.AddScoped<OrderDbContextInitialiser>();
-            }
+            services.AddScoped<OrderDbContextInitialiser>();
             services.AddApplication();
             return services;
         }

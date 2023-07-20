@@ -30,10 +30,7 @@ namespace CleanArchitecture.Services.Catalog.Infrastructure.IoC
                    options.UseNpgsql(connectionString));
             services.AddScoped<EntitySaveChangesInterceptor>();
             services.AddScoped<ICatalogDbContext>(provider => provider.GetService<CatalogDbContext>());
-            if (webHostEnvironment.IsDevelopment())
-            {
-                services.AddScoped<CatalogDbContextInitialiser>();
-            }
+            services.AddScoped<CatalogDbContextInitialiser>();
             services.AddApplication();
             return services;
         }

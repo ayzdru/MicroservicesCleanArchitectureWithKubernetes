@@ -2,12 +2,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    kubernetes.io/ingress.class: nginx
     cert-manager.io/cluster-issuer: blazor-webassembly-cluster-issuer
   name: blazor-webassembly-ingress
 spec:
+  ingressClassName: nginx
   rules:
-  - host: blazorwebassembly.local
+  - host: blazor-webassembly-service.clean-architecture
     http:
       paths:
       - pathType: Prefix
@@ -19,5 +19,5 @@ spec:
               number: 80
   tls:
   - hosts:
-    - blazorwebassembly.local
+    - blazor-webassembly-service.clean-architecture
     secretName: blazor-webassembly-tls

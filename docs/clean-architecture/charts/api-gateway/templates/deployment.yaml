@@ -1,27 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: payment-deployment
+  name: api-gateway-deployment
+  labels:
+    app: api-gateway
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: payment
+      app: api-gateway
   template:
     metadata:
       labels:
-        app: payment
+        app: api-gateway
     spec:
-      initContainers:
-      - name: "payment-database-migration-init"
-        image: "groundnuty/k8s-wait-for:v2.0"
-        imagePullPolicy: IfNotPresent
-        args: 
-        - "job"
-        - "payment-database-migration-job"
       containers:
-      - name: payment
-        image: dockerprivateregistry.local/payment:latest
+      - name: api-gateway
+        image: dockerprivateregistry.local/apigateway:latest
         imagePullPolicy: Always
         startupProbe:
           httpGet:

@@ -2,7 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: blazor-webassembly-deployment
+  labels:
+    app: blazor-webassembly
 spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blazor-webassembly
   template:
     metadata:
       labels:
@@ -10,7 +16,8 @@ spec:
     spec:
       containers:
       - name: blazor-webassembly
-        image: dockerprivateregistry.local/blazor-webassembly:latest
+        image: dockerprivateregistry.local/blazorwebassembly:latest
+        imagePullPolicy: Always
         startupProbe:
           httpGet:
             path: /health/startup

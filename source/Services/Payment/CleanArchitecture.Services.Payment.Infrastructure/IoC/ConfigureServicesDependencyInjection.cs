@@ -28,10 +28,7 @@ namespace CleanArchitecture.Services.Payment.Infrastructure.IoC
                    options.UseNpgsql(connectionString));
             services.AddScoped<EntitySaveChangesInterceptor>();
             services.AddScoped<IPaymentDbContext>(provider => provider.GetService<PaymentDbContext>());
-            if (webHostEnvironment.IsDevelopment())
-            {
-                services.AddScoped<PaymentDbContextInitialiser>();
-            }
+            services.AddScoped<PaymentDbContextInitialiser>();
             services.AddApplication();
             return services;
         }

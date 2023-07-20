@@ -14,13 +14,12 @@ spec:
       containers:
       - name: catalog
         image: "dockerprivateregistry.local/catalog:latest"
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         command: ["dotnet"]
         args: ["CleanArchitecture.Services.Catalog.API.dll", "migrate-database"]
         env:
-          {{- $env := merge .Values.env .Values.global.env -}}
-          {{ range $k, $v := $env }}
-            - name: {{ $k | quote }}
-              value: {{ $v | quote }}
-          {{- end }}
+        {{ range $k, $v := .Values.global.env }}
+          - name: {{ $k | quote }}
+            value: {{ $v | quote }}
+        {{- end }}
       restartPolicy: Never
