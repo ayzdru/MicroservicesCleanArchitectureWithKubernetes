@@ -25,3 +25,4 @@ CQRS
 
 [Kubernetes ile ASP.Net Core Microservices Clean Architecture - Service Discovery, API Gateway, CAP Teoremi, Outbox Pattern, Distributed Transaction, Distributed Caching, Kafka, Redis, Ocelot, Consul - Bölüm 4](https://www.ayazduru.com.tr/blog/post/2023/07/10/kubernetes-ile-asp-net-core-microservices-clean-architecture-service-discovery-api-gateway-cap-teoremi-outbox-pattern-distributed-transaction-distributed-caching-kafka-redis-ocelot-consul-bolum-4)
 
+[Kubernetes ile ASP.Net Core Microservices Clean Architecture - Blazor Web Assembly, Kubernetes Deployment, Captain Docker, Helm Chart, Init Container ve Jobs, Production, Development, Staging, Local, Private Docker Registry - Bölüm 5](https://www.ayazduru.com.tr/blog/post/2023/07/19/kubernetes-ile-asp-net-core-microservices-clean-architecture-blazor-web-assembly-kubernetes-deployment-captain-docker-helm-chart-init-container-ve-jobs-production-development-staging-local-private-docker-registry-bolum-5)
