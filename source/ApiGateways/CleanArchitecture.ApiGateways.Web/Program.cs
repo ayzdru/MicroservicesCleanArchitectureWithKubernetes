@@ -9,6 +9,8 @@ using Ocelot.Middleware;
 using Ocelot.Provider.Consul;
 using Ocelot.Values;
 using CleanArchitecture.Shared.HealthChecks;
+using Kros.Utils;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAllHealthChecks();
@@ -18,17 +20,27 @@ if (builder.Environment.IsProduction() == false)
     builder.Configuration.AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json");
 }
 var serviceName = builder.Configuration.GetValue<string>("ServiceName");
-var server = builder.Services.BuildServiceProvider().GetService<IServer>();
+var consul = builder.Configuration.GetValue<string>("Consul");
+var serviceAddress = builder.Configuration.GetValue<string>("ServiceAddress");
+var servicePort = builder.Configuration.GetValue<int>("ServicePort");
 
-var addresses = server?.Features.Get<IServerAddressesFeature>().Addresses;
 builder.Services.AddResponseCompression();
 builder.Services.AddConsul(serviceName, options =>
 {
-    options.Address = new Uri(builder.Configuration.GetValue<string>("Consul"));
-}).AddConsulDynamicServiceRegistration(options =>
+    options.Address = new Uri(consul);
+}).AddConsulServiceRegistration(options =>
 {
     options.ID = serviceName;
     options.Name = serviceName;
+    options.Address = serviceAddress;
+    options.Port = servicePort;
+    options.Check = new AgentCheckRegistration()
+    {
+        HTTP = $"http://{serviceAddress}:{servicePort}/health",
+        Notes = "Checks /health",
+        Timeout = TimeSpan.FromSeconds(20),
+        Interval = TimeSpan.FromSeconds(60)
+    };
 });
 builder.Services.AddOcelot().AddConsul();
 builder.Services.AddControllers();

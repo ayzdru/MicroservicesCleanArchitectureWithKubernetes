@@ -77,10 +77,12 @@ else
     builder.Services.AddConsul(serviceName, options =>
     {
         options.Address = new Uri(builder.Configuration.GetValue<string>("Consul"));
-    }).AddConsulDynamicServiceRegistration(options =>
+    }).AddConsulServiceRegistration(options =>
     {
         options.ID = serviceName;
-        options.Name = serviceName;
+        options.Name = serviceName; 
+        options.Address = builder.Configuration.GetValue<string>("ServiceAddress");
+        options.Port = builder.Configuration.GetValue<int>("ServicePort");
     });
     builder.Services.AddGrpcHealthChecks();
     var healthChecks = builder.Services.AddAllHealthChecks();

@@ -15,6 +15,7 @@ using CleanArchitecture.Services.Basket.Core.Interfaces;
 using CleanArchitecture.Services.Catalog.API.Grpc.V1;
 using CleanArchitecture.Shared.DataProtection.Redis;
 using CleanArchitecture.Shared.HealthChecks;
+using Consul.AspNetCore;
 using Grpc.Net.Client;
 using HealthChecks.UI.Client;
 using HealthChecks.UI.Core.Data;
@@ -51,6 +52,17 @@ namespace CleanArchitecture.Services.Basket.API
 
 
             var builder = WebApplication.CreateBuilder(args);
+            var serviceName = builder.Configuration.GetValue<string>("ServiceName");
+            builder.Services.AddConsul(serviceName, options =>
+            {
+                options.Address = new Uri(builder.Configuration.GetValue<string>("Consul"));
+            }).AddConsulServiceRegistration(options =>
+            {
+                options.ID = serviceName;
+                options.Name = serviceName;
+                options.Address = builder.Configuration.GetValue<string>("ServiceAddress");
+                options.Port = builder.Configuration.GetValue<int>("ServicePort");
+            });
             builder.Services.AddGrpcHealthChecks();
             var healthChecks = builder.Services.AddAllHealthChecks();
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("sub");
@@ -157,7 +169,7 @@ namespace CleanArchitecture.Services.Basket.API
             metadata.Add("Authorization", $"Bearer {token}");
         }
     });
-            var serviceName = builder.Configuration.GetValue<string>("ServiceName");
+           
             var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
             var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
             var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");

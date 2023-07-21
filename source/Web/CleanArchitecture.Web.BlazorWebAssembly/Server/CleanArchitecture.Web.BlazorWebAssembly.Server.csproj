@@ -1,26 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>CleanArchitecture.Web.BlazorWebAssembly.Server-bb931354-4994-4a21-9637-b517924e7e1e</UserSecretsId>
-    <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.7" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Client\CleanArchitecture.Web.BlazorWebAssembly.Client.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.7" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.7" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="2.12.4" />
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.12.4" />
-  </ItemGroup>
-
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>CleanArchitecture.Web.BlazorWebAssembly.Server-bb931354-4994-4a21-9637-b517924e7e1e</UserSecretsId>
+		<WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.7" />
+		<PackageReference Include="Consul.AspNetCore" Version="1.6.10.9" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.7" NoWarn="NU1605" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.7" NoWarn="NU1605" />
+		<PackageReference Include="Microsoft.Identity.Web" Version="2.12.4" />
+		<PackageReference Include="Microsoft.Identity.Web.UI" Version="2.12.4" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Client\CleanArchitecture.Web.BlazorWebAssembly.Client.csproj" />
+	</ItemGroup>
 </Project>

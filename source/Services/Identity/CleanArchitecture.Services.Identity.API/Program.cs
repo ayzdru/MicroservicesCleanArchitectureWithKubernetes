@@ -33,6 +33,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using CleanArchitecture.Services.Identity.Infrastructure.IoC;
+using Consul.AspNetCore;
 
 ServicePointManager.ServerCertificateValidationCallback +=
 (sender, cert, chain, sslPolicyErrors) => true;
@@ -71,6 +72,17 @@ if (args.Contains("migrate-database") == true)
 else
 {
     var builder = WebApplication.CreateBuilder(args);
+    var serviceName = builder.Configuration.GetValue<string>("ServiceName");
+    builder.Services.AddConsul(serviceName, options =>
+    {
+        options.Address = new Uri(builder.Configuration.GetValue<string>("Consul"));
+    }).AddConsulServiceRegistration(options =>
+    {
+        options.ID = serviceName;
+        options.Name = serviceName;
+        options.Address = builder.Configuration.GetValue<string>("ServiceAddress");
+        options.Port = builder.Configuration.GetValue<int>("ServicePort");
+    });
     var healthChecks = builder.Services.AddAllHealthChecks();
     var connectionString = builder.Configuration.GetConnectionString("IdentityConnectionString");
     builder.Services.AddHttpContextAccessor();
@@ -115,7 +127,7 @@ else
         x.FailedRetryCount = 5;
         x.FailedMessageExpiredAfter = int.MaxValue;
     });
-    var serviceName = builder.Configuration.GetValue<string>("ServiceName");
+   
     var cacheRedisConnectionString = builder.Configuration.GetValue<string>("CacheRedisConnectionString");
     var kekRedisConnectionString = builder.Configuration.GetValue<string>("KeyEncryptionKeyRedisConnectionString");
     var dekRedisConnectionString = builder.Configuration.GetValue<string>("DataEncryptionKeyRedisConnectionString");
